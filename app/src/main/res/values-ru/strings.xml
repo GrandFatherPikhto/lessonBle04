@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">lessonBle04</string>
+    <string name="action_settings">Настройки</string>
+    <string name="scan_fragment_label">Сканирование BLE</string>
+    <string name="device_fragment_label">BLE Устройство</string>
+    <string name="scan_start">Сканировать</string>
+    <string name="scan_stop">Остановить</string>
+    <string name="scan_error">Ошибка %1$d</string>
+    <string name="device_connect">Подключиться</string>
+    <string name="device_disconnect">Отключиться</string>
+    <string name="device_pairing">Сопрячь Устройство</string>
+    <string name="to_scan_fragment">Перейти к сканированию</string>
+    <string name="description_bond">Сопряжение Устройства</string>
+    <string name="description_connectable">Подключаемое устройство</string>
+    <string name="unknown_device">Неизвестное Устройство</string>
+    <string name="permission_granted">Разрешение на %1$s получение</string>
+    <string name="permission_not_granted">Разрешение на %1$s не получено</string>
+</resources>

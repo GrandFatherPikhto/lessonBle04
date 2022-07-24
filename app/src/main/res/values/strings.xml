@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">lessonBle04</string>
+    <string name="action_settings">Settings</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="scan_fragment_label">Scan BLE Devices</string>
+    <string name="device_fragment_label">BLE Device</string>
+    <string name="scan_start">Start Scan</string>
+    <string name="scan_stop">Stop Scan</string>
+    <string name="scan_error">Scan Error %1$d</string>
+    <string name="rssi_title" translatable="false">RSSI: %1$d</string>
+    <string name="device_connect">Connect</string>
+    <string name="device_disconnect">Disconnect</string>
+    <string name="device_pairing">Pairing Device</string>
+    <string name="to_scan_fragment">Go To Scan Fragment</string>
+    <string name="description_bond">Bond State BLE Device</string>
+    <string name="description_connectable">Is BLE Device Connectable</string>
+    <string name="unknown_device">Unknown Device</string>
+    <string name="default_address" translatable="false">00:00:00:00:00:00</string>
+    <string name="default_uuid" translatable="false">123e4567-e89b-12d3-a456-426614174000</string>
+    <string name="permission_granted">Permission %1$s is granted</string>
+    <string name="permission_not_granted">Permission on %1$s is not granted</string>
+
+</resources>
