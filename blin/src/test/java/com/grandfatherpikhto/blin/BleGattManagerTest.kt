@@ -12,6 +12,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.verify
 import org.robolectric.RobolectricTestRunner
 
@@ -25,6 +26,7 @@ class BleGattManagerTest {
         const val ERROR_6   = 6
     }
 
+    private lateinit var closeable:AutoCloseable
     private val bleManager =
         BleManager(
             ApplicationProvider.getApplicationContext<Context?>().applicationContext,
@@ -33,11 +35,12 @@ class BleGattManagerTest {
 
     @Before
     fun setUp() {
-
+        closeable = MockitoAnnotations.openMocks(this)
     }
 
     @After
     fun tearDown() {
+        closeable.close()
     }
 
     @Test

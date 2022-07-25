@@ -44,7 +44,7 @@ class BleManager constructor(private val context: Context,
     val bluetoothGatt get() = bleGattManager.bluetoothGatt
 
     val stateFlowBondState get() = bleBondManager.stateFlowBond
-    val stateBonded get() = bleBondManager.stateBond
+    val stateBond get() = bleBondManager.stateBond
 
     fun bondRequest(bluetoothDevice: BluetoothDevice) = bleBondManager.bondRequest(bluetoothDevice)
 

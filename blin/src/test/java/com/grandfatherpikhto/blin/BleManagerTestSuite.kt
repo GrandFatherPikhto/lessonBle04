@@ -8,6 +8,7 @@ import org.junit.runners.Suite
 @Suite.SuiteClasses(
     BleScanManagerTest::class,
     BleGattManagerTest::class,
+    BleBondManagerTest::class,
 )
 
 class BleManagerTestSuite
