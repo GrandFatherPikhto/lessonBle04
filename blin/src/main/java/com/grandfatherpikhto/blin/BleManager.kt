@@ -24,7 +24,7 @@ class BleManager constructor(private val context: Context,
     val connector get() = bleGattManager
 
     private val bleBondManager = BleBondManager(this, dispatcher)
-    val bonder get() = bleGattManager
+    val bonder get() = bleBondManager
 
     val stateFlowScanState get() = bleScanManager.stateFlowScanState
     val scanState get()     = bleScanManager.scanState
@@ -39,7 +39,6 @@ class BleManager constructor(private val context: Context,
     val connectState get() = bleGattManager.connectState
 
     val stateFlowConnectStateCode get() = bleGattManager.stateFlowConnectStateCode
-    val connectStateCode get() = bleGattManager.connectStateCode
 
     val stateFlowGatt get() = bleGattManager.stateFlowGatt
     val bluetoothGatt get() = bleGattManager.bluetoothGatt
@@ -53,6 +52,7 @@ class BleManager constructor(private val context: Context,
         super.onCreate(owner)
         owner.lifecycle.addObserver(bleScanManager)
         owner.lifecycle.addObserver(bleGattManager)
+        owner.lifecycle.addObserver(bleBondManager)
     }
 
     fun startScan(addresses: List<String> = listOf(),

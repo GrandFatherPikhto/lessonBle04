@@ -8,30 +8,25 @@ import android.util.Log
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class BleGattManager constructor(private val bleManager: BleManager,
-                                 private val dispatcher: CoroutineDispatcher = Dispatchers.IO)
+                                 dispatcher: CoroutineDispatcher = Dispatchers.IO)
     : DefaultLifecycleObserver {
+
+    companion object {
+        const val MAX_ATTEMPTS = 6
+    }
+    
     enum class State(val value:Int) {
         Disconnected  (0x00), // Отключены
         Disconnecting (0x01), // Отключаемся
         Connecting    (0x02), // Подключаемся
         Connected     (0x02), // Подключены
         Error         (0xFF), // Получена ошибка
-    }
-
-    enum class Connection(val value: Int) {
-        Disconnected(0x00),
-        Disconnecting(0x01),
-        Connecting(0x02),
-        Connected(0x03),
-        Discovering(0x04),
-        Discovered(0x05),
-        Rescanning(0x06),
-        Rescanned(0x07),
-        Error(0xFF)
     }
 
     private val logTag = this.javaClass.simpleName
@@ -43,15 +38,13 @@ class BleGattManager constructor(private val bleManager: BleManager,
     private var attemptReconnect = true
     private var reconnectAttempts = 0
     val attempt get() = reconnectAttempts
-    private val maxAttempts = 6
 
     private val mutableStateFlowConnectState  = MutableStateFlow(State.Disconnected)
     val stateFlowConnectState get() = mutableStateFlowConnectState.asStateFlow()
     val connectState get() = mutableStateFlowConnectState.value
 
-    private val mutableStateFlowConnectStateCode = MutableStateFlow(-1)
-    val stateFlowConnectStateCode get() = mutableStateFlowConnectStateCode.asStateFlow()
-    val connectStateCode get() = mutableStateFlowConnectState.value
+    private val mutableStateFlowConnectStateCode = MutableSharedFlow<Int>(replay = 100)
+    val stateFlowConnectStateCode get() = mutableStateFlowConnectStateCode.asSharedFlow()
 
     private val mutableStateFlowGatt = MutableStateFlow<BluetoothGatt?>(null)
     val stateFlowGatt get() = mutableStateFlowGatt.asStateFlow()
@@ -59,14 +52,15 @@ class BleGattManager constructor(private val bleManager: BleManager,
 
     val bleScanManager = bleManager.scanner
 
-    override fun onCreate(owner: LifecycleOwner) {
-        super.onCreate(owner)
+    init {
         scope.launch {
             bleScanManager.stateFlowScanState.collect { scanState ->
-                if (attemptReconnect &&
+                if (attemptReconnect && bluetoothDevice != null &&
                     scanState == BleScanManager.State.Stopped &&
-                        bleScanManager.results.last().device == bluetoothDevice) {
-                    if (reconnectAttempts < maxAttempts) {
+                    bleScanManager.results.isNotEmpty() &&
+                    bleScanManager.results.last().device.address
+                        == bluetoothDevice!!.address) {
+                    if (reconnectAttempts < MAX_ATTEMPTS) {
                         doConnect()
                     } else {
                         mutableStateFlowConnectState.tryEmit(State.Error)
@@ -75,6 +69,10 @@ class BleGattManager constructor(private val bleManager: BleManager,
                 }
             }
         }
+    }
+
+    override fun onCreate(owner: LifecycleOwner) {
+        super.onCreate(owner)
     }
 
     override fun onDestroy(owner: LifecycleOwner) {
@@ -86,8 +84,7 @@ class BleGattManager constructor(private val bleManager: BleManager,
      *
      */
     private fun doRescan() {
-        Log.d(logTag, "doRescan()")
-        if (attemptReconnect && reconnectAttempts < maxAttempts) {
+        if (attemptReconnect && reconnectAttempts < MAX_ATTEMPTS) {
             bluetoothDevice?.let { device ->
                 bleManager.startScan(addresses = listOf(device.address),
                     stopTimeout = 2000L,
@@ -98,12 +95,14 @@ class BleGattManager constructor(private val bleManager: BleManager,
 
     fun connect(address:String) : BluetoothGatt? {
         Log.d(logTag, "connect($address)")
-        bleManager.bluetoothAdapter.getRemoteDevice(address)?.let { device ->
-            mutableStateFlowConnectState.tryEmit(State.Connecting)
-            bluetoothDevice = device
-            attemptReconnect = true
-            reconnectAttempts = 0
-            doConnect()
+        if (connectState == State.Disconnected) {
+            bleManager.bluetoothAdapter.getRemoteDevice(address)?.let { device ->
+                mutableStateFlowConnectState.tryEmit(State.Connecting)
+                bluetoothDevice = device
+                attemptReconnect = true
+                reconnectAttempts = 0
+                doConnect()
+            }
         }
 
         return null
@@ -112,10 +111,8 @@ class BleGattManager constructor(private val bleManager: BleManager,
     @SuppressLint("MissingPermission")
     private fun doConnect() : BluetoothGatt? {
         bluetoothDevice?.let { device ->
-            Log.d(logTag, "doConnect($device), reconnect = $attemptReconnect, attempts = $reconnectAttempts")
-            if (attemptReconnect) {
-                reconnectAttempts ++
-            }
+            reconnectAttempts ++
+
             return device.connectGatt(
                 bleManager.applicationContext,
                 device.type == BluetoothDevice.DEVICE_TYPE_UNKNOWN,
@@ -194,7 +191,7 @@ class BleGattManager constructor(private val bleManager: BleManager,
         } else {
             mutableStateFlowConnectStateCode.tryEmit(newState)
             if (attemptReconnect) {
-                if (reconnectAttempts < maxAttempts) {
+                if (reconnectAttempts < MAX_ATTEMPTS) {
                     doRescan()
                 } else {
                     mutableStateFlowConnectState.tryEmit(State.Error)

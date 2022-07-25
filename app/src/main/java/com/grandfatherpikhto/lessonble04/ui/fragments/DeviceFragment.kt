@@ -11,6 +11,7 @@ import androidx.fragment.app.clearFragmentResult
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.grandfatherpikhto.blin.BleBondManager
 import com.grandfatherpikhto.blin.BleGattManager
 import com.grandfatherpikhto.blin.BleManager
 import com.grandfatherpikhto.blin.BleScanManager
@@ -145,7 +146,7 @@ class DeviceFragment : Fragment() {
             }
         }
 
-        binding.ivBleConnected.setOnClickListener {
+        binding.ivBleConnected.setOnClickListener { _ ->
             when(deviceViewModel.connectState) {
                 BleGattManager.State.Connected -> {
                     bleManager.disconnect()
@@ -156,6 +157,24 @@ class DeviceFragment : Fragment() {
                     }
                 }
                 else -> { }
+            }
+        }
+
+        binding.ivBlePaired.setOnClickListener { _ ->
+            mainActivityViewModel.scanResult?.let { scanResult ->
+                if (scanResult.device.bondState != BluetoothDevice.BOND_BONDED) {
+                    bleManager.bonder.bondRequest(scanResult.device)
+                }
+            }
+        }
+
+        lifecycleScope.launch {
+            deviceViewModel.stateFlowBondState.collect { bondState ->
+                if (bondState == BleBondManager.State.Bondend) {
+                    binding.ivBlePaired.setImageResource(R.drawable.ic_paired)
+                } else {
+                    binding.ivBlePaired.setImageResource(R.drawable.ic_unpaired)
+                }
             }
         }
     }

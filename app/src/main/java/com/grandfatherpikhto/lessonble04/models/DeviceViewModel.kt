@@ -12,4 +12,7 @@ class DeviceViewModel (private val bleManager: BleManager): ViewModel () {
 
     val stateFlowGatt get() = bleManager.stateFlowGatt
     val bluetoothGatt get() = bleManager.bluetoothGatt
+
+    val stateFlowBondState   get() = bleManager.stateFlowBondState
+    val stateBonded          get() = bleManager.stateBonded
 }

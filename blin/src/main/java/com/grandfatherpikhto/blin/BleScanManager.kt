@@ -95,6 +95,7 @@ class BleScanManager constructor(private val bleManager: BleManager,
                   filterRepeatable: Boolean = true,
                   stopTimeout: Long = 0L
     ) : Boolean {
+
         if (scanState == State.Error) {
             Log.e(logTag, "Error: ${stateFlowError.value}")
             mutableStateFlowScanState.tryEmit(State.Stopped)
@@ -103,7 +104,8 @@ class BleScanManager constructor(private val bleManager: BleManager,
         scanIdling?.scanned = false
 
         if (scanState == State.Stopped) {
-            // devices.clear()
+
+            scanResults.clear()
 
             this.addresses.clear()
             this.addresses.addAll(addresses)

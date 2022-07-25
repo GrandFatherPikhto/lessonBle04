@@ -111,8 +111,10 @@ class ScanFragment : Fragment() {
         }
 
         rvBtAdapter.setItemOnClickListener { scanResult, _ ->
-            mainActivityViewModel.changeScanResult(scanResult)
-            findNavController().navigate(R.id.action_ScanFragment_to_DeviceFragment)
+            if (scanResult.isConnectable) {
+                mainActivityViewModel.changeScanResult(scanResult)
+                findNavController().navigate(R.id.action_ScanFragment_to_DeviceFragment)
+            }
         }
 
         lifecycleScope.launch {
