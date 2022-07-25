@@ -3,6 +3,7 @@ package com.grandfatherpikhto.blin
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.content.IntentFilter
+import android.util.Log
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.grandfatherpikhto.BcBondReceiver
@@ -15,6 +16,9 @@ import kotlinx.coroutines.flow.asStateFlow
 class BleBondManager (private val bleManager: BleManager,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO)
     : DefaultLifecycleObserver {
+
+    private val logTag = this.javaClass.simpleName
+
     private val scope = CoroutineScope(dispatcher)
 
     private var requestDevice: BluetoothDevice? = null
@@ -75,6 +79,7 @@ class BleBondManager (private val bleManager: BleManager,
      * BluetoothDevice.BOND_BONDED  12
      */
     fun onSetBondingDevice(bluetoothDevice: BluetoothDevice?, oldState: Int, newState: Int) {
+        Log.d(logTag, "onSetBondingDevice($bluetoothDevice, $oldState, $newState)")
         bluetoothDevice?.let { device ->
             if (device == requestDevice) {
                 if (newState == BluetoothDevice.BOND_BONDED) {

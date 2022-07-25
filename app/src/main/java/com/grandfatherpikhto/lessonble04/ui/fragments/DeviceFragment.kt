@@ -162,6 +162,7 @@ class DeviceFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        bleManager.disconnect()
         linkMenu(false, menuProvider)
         _binding = null
     }

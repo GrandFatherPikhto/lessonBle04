@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 
 class BcScanReceiver constructor(private val bleScanManager: BleScanManager, dispatcher: CoroutineDispatcher = Dispatchers.IO): BroadcastReceiver() {
@@ -15,7 +16,11 @@ class BcScanReceiver constructor(private val bleScanManager: BleScanManager, dis
         const val ACTION_BLE_SCAN = "com.pikhto.lessonble04.ACTION_BLE_SCAN"
         const val REQUEST_CODE_BLE_SCANNER_PENDING_INTENT = 1000
     }
+
+    private val scope = CoroutineScope(dispatcher)
+
     private val logTag = this.javaClass.simpleName
+
     private val bcPendingIntent: PendingIntent by lazy {
         PendingIntent.getBroadcast(
             bleScanManager.applicationContext,

@@ -105,8 +105,6 @@ class BleScanManager constructor(private val bleManager: BleManager,
         if (state == State.Stopped) {
             // devices.clear()
 
-            Log.d(logTag, "startScan()")
-
             this.addresses.clear()
             this.addresses.addAll(addresses)
 
@@ -119,6 +117,8 @@ class BleScanManager constructor(private val bleManager: BleManager,
             this.uuids.clear()
             this.uuids.addAll(services.mapNotNull { ParcelUuid.fromString(it) }
                 .toMutableList())
+
+            Log.d(logTag, "startScan()")
 
             if (stopTimeout > 0) {
                 scope.launch {
@@ -190,49 +190,37 @@ class BleScanManager constructor(private val bleManager: BleManager,
         return false
     }
 
-    private fun isNewDevice(scanResult: ScanResult) : Boolean {
-        scanResult.device.let { bluetoothDevice ->
-            if (!devices.contains(bluetoothDevice)) {
-                scanResults.add(scanResult)
-                return  true
-            }
+    fun onReceiveError(errorCode: Int) {
+        if (errorCode > 0) {
+            mutableFlowStateError.tryEmit(errorCode)
+            stopScan()
         }
-        return false
     }
 
     @SuppressLint("MissingPermission")
-    private fun filterScanResult (scanResult: ScanResult) {
+    fun onReceiveScanResult(scanResult: ScanResult) {
         scanResult.device.let { bluetoothDevice ->
-            if (filterName(bluetoothDevice)
-                    .and(filterAddress(bluetoothDevice))
-                    .and(filterUuids(bluetoothDevice.uuids))
+            if ( filterName(bluetoothDevice)
+                .and(filterAddress(bluetoothDevice))
+                .and(filterUuids(bluetoothDevice.uuids))
             ) {
-                mutableSharedFlowScanResult.tryEmit(scanResult)
+                val contains = scanResults.map { it.device }.contains(scanResult.device)
+                if (!contains) {
+                    scanResults.add(scanResult)
+                }
 
-                if (stopOnFind &&
-                    (names.isNotEmpty()
+                if (!notEmitRepeat || !contains) {
+                    mutableSharedFlowScanResult.tryEmit(scanResult)
+
+                    if (stopOnFind &&
+                        (names.isNotEmpty()
                         .or(addresses.isNotEmpty()
-                            .or(uuids.isNotEmpty())))) {
-                    stopScan()
+                        .or(uuids.isNotEmpty())))
+                    ) {
+                        stopScan()
+                    }
                 }
             }
-        }
-    }
-
-    fun onReceiveError(errorCode: Int) {
-        mutableFlowStateError.tryEmit(errorCode)
-        stopScan()
-    }
-
-    fun onReceiveScanResult(scanResult: ScanResult) {
-        val contains = scanResults.map { it.device }.contains(scanResult.device)
-        Log.d(logTag, "ScanResult: ${scanResult.device}")
-        if (!contains) {
-            scanResults.add(scanResult)
-        }
-
-        if (!notEmitRepeat || !contains) {
-            filterScanResult(scanResult)
         }
     }
 

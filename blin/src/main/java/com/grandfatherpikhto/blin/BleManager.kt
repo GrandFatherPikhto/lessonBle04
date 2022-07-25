@@ -30,7 +30,7 @@ class BleManager constructor(private val context: Context,
     val scanState get()     = bleScanManager.stateFlowScanState.value
 
     val sharedFlowScanResult get() = bleScanManager.sharedFlowScanResult
-    val scannedDevices get() = bleScanManager.devices
+    val scanResults get() = bleScanManager.results
 
     val stateFlowScanError get() = bleScanManager.stateFlowError
     val scanError get()     = bleScanManager.scanError
