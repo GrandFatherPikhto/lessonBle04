@@ -1,19 +1,21 @@
 package com.grandfatherpikhto.blin
 
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothGatt
 import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanRecord
 import android.bluetooth.le.ScanResult
 import android.content.Intent
 import org.mockito.Mockito
+import org.mockito.Mockito.lenient
 import org.mockito.kotlin.mock
 import org.robolectric.RuntimeEnvironment
 import kotlin.random.Random
 
 fun mockBluetoothDevice(name: String? = null, address: String? = null): BluetoothDevice {
     val bluetoothDevice = mock<BluetoothDevice>()
-    Mockito.lenient().`when`(bluetoothDevice.name).thenReturn(name)
-    Mockito.lenient().`when`(bluetoothDevice.address)
+    lenient().`when`(bluetoothDevice.name).thenReturn(name)
+    lenient().`when`(bluetoothDevice.address)
         .thenReturn(address ?: Random.nextBytes(6)
             .joinToString (":") { String.format("%02X", it) })
     return bluetoothDevice
@@ -52,3 +54,15 @@ fun Intent.toBluetoothDevices() : List<BluetoothDevice>
     ?.let { arrayList: java.util.ArrayList<ScanResult> ->
         arrayList.map { scanResult -> scanResult.device }
     } ?: listOf()
+
+fun mockBluetoothGatt(address: String? = null, name: String? = null) : BluetoothGatt {
+    val bluetoothDevice = mockBluetoothDevice(name, address)
+    return mockBluetoothGatt(bluetoothDevice)
+}
+
+fun mockBluetoothGatt(bluetoothDevice: BluetoothDevice) : BluetoothGatt {
+    val bluetoothGatt = mock<BluetoothGatt>()
+    lenient().`when`(bluetoothGatt.discoverServices()).thenReturn(true)
+    lenient().`when`(bluetoothGatt.device).thenReturn(bluetoothDevice)
+    return bluetoothGatt
+}

@@ -27,7 +27,7 @@ class BleManager constructor(private val context: Context,
     val bonder get() = bleGattManager
 
     val stateFlowScanState get() = bleScanManager.stateFlowScanState
-    val scanState get()     = bleScanManager.stateFlowScanState.value
+    val scanState get()     = bleScanManager.scanState
 
     val sharedFlowScanResult get() = bleScanManager.sharedFlowScanResult
     val scanResults get() = bleScanManager.results
@@ -36,7 +36,7 @@ class BleManager constructor(private val context: Context,
     val scanError get()     = bleScanManager.scanError
 
     val stateFlowConnectState get() = bleGattManager.stateFlowConnectState
-    val connectState get() = bleGattManager.stateFlowConnectState.value
+    val connectState get() = bleGattManager.connectState
 
     val stateFlowConnectStateCode get() = bleGattManager.stateFlowConnectStateCode
     val connectStateCode get() = bleGattManager.connectStateCode

@@ -38,7 +38,7 @@ class BleScanManager constructor(private val bleManager: BleManager,
 
     private val mutableStateFlowScanState = MutableStateFlow(State.Stopped)
     val stateFlowScanState get() = mutableStateFlowScanState.asStateFlow()
-    private val state get() = mutableStateFlowScanState.value
+    val scanState get() = mutableStateFlowScanState.value
 
     private val mutableSharedFlowScanResult = MutableSharedFlow<ScanResult>(replay = 100)
     val sharedFlowScanResult get() = mutableSharedFlowScanResult.asSharedFlow()
@@ -95,14 +95,14 @@ class BleScanManager constructor(private val bleManager: BleManager,
                   filterRepeatable: Boolean = true,
                   stopTimeout: Long = 0L
     ) : Boolean {
-        if (state == State.Error) {
+        if (scanState == State.Error) {
             Log.e(logTag, "Error: ${stateFlowError.value}")
             mutableStateFlowScanState.tryEmit(State.Stopped)
         }
 
         scanIdling?.scanned = false
 
-        if (state == State.Stopped) {
+        if (scanState == State.Stopped) {
             // devices.clear()
 
             this.addresses.clear()
@@ -146,7 +146,7 @@ class BleScanManager constructor(private val bleManager: BleManager,
 
     @SuppressLint("MissingPermission")
     fun stopScan() {
-        if (state == State.Scanning) {
+        if (scanState == State.Scanning) {
             Log.d(logTag, "stopScan()")
             bleManager.bluetoothLeScanner.stopScan(bleScanPendingIntent)
             mutableStateFlowScanState.tryEmit(State.Stopped)

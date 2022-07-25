@@ -22,6 +22,18 @@ class BleGattManager constructor(private val bleManager: BleManager,
         Error         (0xFF), // Получена ошибка
     }
 
+    enum class Connection(val value: Int) {
+        Disconnected(0x00),
+        Disconnecting(0x01),
+        Connecting(0x02),
+        Connected(0x03),
+        Discovering(0x04),
+        Discovered(0x05),
+        Rescanning(0x06),
+        Rescanned(0x07),
+        Error(0xFF)
+    }
+
     private val logTag = this.javaClass.simpleName
     private val bleGattCallback  = BleGattCallback(this, dispatcher)
     private var bluetoothDevice: BluetoothDevice? = null
@@ -30,6 +42,7 @@ class BleGattManager constructor(private val bleManager: BleManager,
 
     private var attemptReconnect = true
     private var reconnectAttempts = 0
+    val attempt get() = reconnectAttempts
     private val maxAttempts = 6
 
     private val mutableStateFlowConnectState  = MutableStateFlow(State.Disconnected)
@@ -43,6 +56,26 @@ class BleGattManager constructor(private val bleManager: BleManager,
     private val mutableStateFlowGatt = MutableStateFlow<BluetoothGatt?>(null)
     val stateFlowGatt get() = mutableStateFlowGatt.asStateFlow()
     val bluetoothGatt:BluetoothGatt? get() = mutableStateFlowGatt.value
+
+    val bleScanManager = bleManager.scanner
+
+    override fun onCreate(owner: LifecycleOwner) {
+        super.onCreate(owner)
+        scope.launch {
+            bleScanManager.stateFlowScanState.collect { scanState ->
+                if (attemptReconnect &&
+                    scanState == BleScanManager.State.Stopped &&
+                        bleScanManager.results.last().device == bluetoothDevice) {
+                    if (reconnectAttempts < maxAttempts) {
+                        doConnect()
+                    } else {
+                        mutableStateFlowConnectState.tryEmit(State.Error)
+                        attemptReconnect = false
+                    }
+                }
+            }
+        }
+    }
 
     override fun onDestroy(owner: LifecycleOwner) {
         disconnect()
