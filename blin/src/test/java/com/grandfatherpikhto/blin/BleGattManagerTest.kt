@@ -47,8 +47,8 @@ class BleGattManagerTest {
     fun testConnect() {
         bleManager.connect(ADDRESS)
         val gatt = mockBluetoothGatt(ADDRESS)
-        bleManager.connector.onConnectionStateChange(gatt, BluetoothGatt.GATT_SUCCESS, BluetoothProfile.STATE_CONNECTED)
-        bleManager.connector.onGattDiscovered(gatt, BluetoothGatt.GATT_SUCCESS)
+        bleManager.bleGattManager.onConnectionStateChange(gatt, BluetoothGatt.GATT_SUCCESS, BluetoothProfile.STATE_CONNECTED)
+        bleManager.bleGattManager.onGattDiscovered(gatt, BluetoothGatt.GATT_SUCCESS)
         assertEquals(BleGattManager.State.Connected, bleManager.connectState)
         assertEquals(gatt, bleManager.bluetoothGatt)
     }
@@ -60,11 +60,11 @@ class BleGattManagerTest {
         val bluetoothGatt = mockBluetoothGatt(bluetoothDevice)
         val scanResult = mockScanResult(bluetoothDevice)
         bleManager.connect(bluetoothDevice.address)
-        bleManager.connector.onConnectionStateChange(null, ERROR_133, 0)
+        bleManager.bleGattManager.onConnectionStateChange(null, ERROR_133, 0)
         assertEquals(BleScanManager.State.Scanning, bleManager.scanState)
-        bleManager.scanner.onReceiveScanResult(scanResult)
+        bleManager.bleScanManager.onReceiveScanResult(scanResult)
         assertEquals(BleScanManager.State.Stopped, bleManager.scanState)
-        bleManager.connector.onGattDiscovered(bluetoothGatt, BluetoothGatt.GATT_SUCCESS)
+        bleManager.bleGattManager.onGattDiscovered(bluetoothGatt, BluetoothGatt.GATT_SUCCESS)
         assertEquals(BleGattManager.State.Connected, bleManager.connectState)
         assertEquals(bluetoothGatt, bleManager.bluetoothGatt)
     }
@@ -76,8 +76,8 @@ class BleGattManagerTest {
         bleManager.connect(ADDRESS)
 
         (1..BleGattManager.MAX_ATTEMPTS).forEach { _->
-            bleManager.connector.onConnectionStateChange(null, ERROR_133, 0)
-            bleManager.scanner.onReceiveScanResult(scanResult)
+            bleManager.bleGattManager.onConnectionStateChange(null, ERROR_133, 0)
+            bleManager.bleScanManager.onReceiveScanResult(scanResult)
         }
 
         assertEquals(BleGattManager.State.Error, bleManager.connectState)

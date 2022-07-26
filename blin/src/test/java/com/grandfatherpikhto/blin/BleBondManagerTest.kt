@@ -46,10 +46,10 @@ class BleBondManagerTest {
         lenient().`when`(bluetoothDevice.bondState).thenReturn(BluetoothDevice.BOND_NONE)
         lenient().`when`(bluetoothDevice.createBond()).thenReturn(true)
         assertEquals(BleBondManager.State.None, bleManager.stateBond)
-        bleManager.bonder.bondRequest(bluetoothDevice)
+        bleManager.bondRequest(bluetoothDevice)
         assertEquals(BleBondManager.State.Bonding, bleManager.stateBond)
         lenient().`when`(bluetoothDevice.bondState).thenReturn(BluetoothDevice.BOND_BONDED)
-        bleManager.bonder.onSetBondingDevice(bluetoothDevice, BluetoothDevice.BOND_NONE, BluetoothDevice.BOND_BONDED)
+        bleManager.bleBondManager.onSetBondingDevice(bluetoothDevice, BluetoothDevice.BOND_NONE, BluetoothDevice.BOND_BONDED)
         assertEquals(BleBondManager.State.Bondend, bleManager.stateBond)
     }
 
@@ -59,7 +59,7 @@ class BleBondManagerTest {
         lenient().`when`(bluetoothDevice.bondState).thenReturn(BluetoothDevice.BOND_NONE)
         lenient().`when`(bluetoothDevice.createBond()).thenReturn(false)
         assertEquals(BleBondManager.State.None, bleManager.stateBond)
-        bleManager.bonder.bondRequest(bluetoothDevice)
+        bleManager.bleBondManager.bondRequest(bluetoothDevice)
         assertEquals(BleBondManager.State.Error, bleManager.stateBond)
     }
 
@@ -69,10 +69,10 @@ class BleBondManagerTest {
         lenient().`when`(bluetoothDevice.bondState).thenReturn(BluetoothDevice.BOND_NONE)
         lenient().`when`(bluetoothDevice.createBond()).thenReturn(true)
         assertEquals(BleBondManager.State.None, bleManager.stateBond)
-        bleManager.bonder.bondRequest(bluetoothDevice)
+        bleManager.bleBondManager.bondRequest(bluetoothDevice)
         assertEquals(BleBondManager.State.Bonding, bleManager.stateBond)
         lenient().`when`(bluetoothDevice.bondState).thenReturn(BluetoothDevice.BOND_BONDED)
-        bleManager.bonder.onSetBondingDevice(bluetoothDevice, BluetoothDevice.BOND_NONE, BluetoothDevice.BOND_NONE)
+        bleManager.bleBondManager.onSetBondingDevice(bluetoothDevice, BluetoothDevice.BOND_NONE, BluetoothDevice.BOND_NONE)
         assertEquals(BleBondManager.State.Reject, bleManager.stateBond)
     }
 }

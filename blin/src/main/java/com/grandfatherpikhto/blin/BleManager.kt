@@ -73,7 +73,4 @@ class BleManager constructor(private val context: Context,
     override fun connect(address: String) = bleGattManager.connect(address)
     override fun disconnect() = bleGattManager.disconnect()
 
-    override fun getScanIdling(name: String?): BleIdling = bleScanManager.getScanIdling(name)
-    override fun getGattIdling():BleIdling = bleGattManager.getGattIdling()
-
 }

@@ -53,7 +53,4 @@ interface BleManagerInterface : DefaultLifecycleObserver {
 
     fun connect(address: String) : BluetoothGatt?
     fun disconnect()
-
-    fun getScanIdling(name: String? = null): BleIdling
-    fun getGattIdling(): BleIdling
 }

@@ -13,6 +13,7 @@ import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry
+import com.grandfatherpikhto.blin.BleManager
 import com.grandfatherpikhto.lessonble04.LessonBle04App
 
 import org.junit.After
@@ -48,15 +49,19 @@ class MainActivityTest {
     @Before
     fun setUp() {
         mainActivityRule.scenario.onActivity {
-            IdlingRegistry.getInstance().register(bleManager.getScanIdling(name = BLE_NAME))
-            IdlingRegistry.getInstance().register(bleManager.getGattIdling())
+            IdlingRegistry.getInstance().register((bleManager as BleManager)
+                .bleScanManager.getScanIdling(name = BLE_NAME))
+            IdlingRegistry.getInstance().register((bleManager as BleManager)
+                .bleGattManager.getGattIdling())
         }
     }
 
     @After
     fun tearDown() {
-        IdlingRegistry.getInstance().unregister(bleManager.getScanIdling())
-        IdlingRegistry.getInstance().unregister(bleManager.getGattIdling())
+        IdlingRegistry.getInstance().unregister((bleManager as BleManager)
+            .bleScanManager.getScanIdling())
+        IdlingRegistry.getInstance().unregister((bleManager as BleManager)
+            .bleGattManager.getGattIdling())
     }
 
     private fun withDrawable(@DrawableRes id: Int) = object : TypeSafeMatcher<View>() {

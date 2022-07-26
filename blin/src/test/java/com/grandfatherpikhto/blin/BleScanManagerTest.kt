@@ -46,9 +46,9 @@ class BleScanManagerTest {
         assertEquals(BleScanManager.State.Scanning, bleManager.scanState)
         val scanResults = mockRandomScanResults(7)
         scanResults.forEach { scanResult ->
-            bleManager.scanner.onReceiveScanResult(scanResult)
+            bleManager.bleScanManager.onReceiveScanResult(scanResult)
         }
-        assertEquals(bleManager.scanner.devices, scanResults.map { it.device })
+        assertEquals(bleManager.bleScanManager.devices, scanResults.map { it.device })
         bleManager.stopScan()
         assertEquals(BleScanManager.State.Stopped, bleManager.scanState)
     }
@@ -63,7 +63,7 @@ class BleScanManagerTest {
             stopOnFind = true)
         assertEquals(BleScanManager.State.Scanning, bleManager.scanState)
         scanResults.forEach { scanResult ->
-            bleManager.scanner.onReceiveScanResult(scanResult)
+            bleManager.bleScanManager.onReceiveScanResult(scanResult)
         }
 
         assertEquals(listOf(filterScanResult), bleManager.scanResults)
@@ -79,7 +79,7 @@ class BleScanManagerTest {
             stopOnFind = true)
         assertEquals(BleScanManager.State.Scanning, bleManager.scanState)
         scanResults.forEach { scanResult ->
-            bleManager.scanner.onReceiveScanResult(scanResult)
+            bleManager.bleScanManager.onReceiveScanResult(scanResult)
         }
         assertEquals(bleManager.scanResults, listOf(filterScanResult))
         assertEquals(BleScanManager.State.Stopped, bleManager.scanState)
