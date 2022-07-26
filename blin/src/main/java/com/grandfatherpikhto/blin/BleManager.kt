@@ -1,52 +1,55 @@
 package com.grandfatherpikhto.blin
 
+import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
+import android.bluetooth.le.BluetoothLeScanner
 import android.content.Context
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import com.grandfatherpikhto.blin.idling.BleIdling
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 
 class BleManager constructor(private val context: Context,
                              dispatcher: CoroutineDispatcher = Dispatchers.IO)
-    : DefaultLifecycleObserver {
-    val bluetoothManager: BluetoothManager =
+    : BleManagerInterface {
+
+    override val bluetoothManager: BluetoothManager =
         context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-    val bluetoothAdapter = bluetoothManager.adapter
-    val bluetoothLeScanner = bluetoothAdapter.bluetoothLeScanner
+    override val bluetoothAdapter: BluetoothAdapter
+        = bluetoothManager.adapter
+    override val bluetoothLeScanner: BluetoothLeScanner
+        = bluetoothAdapter.bluetoothLeScanner
 
-    val applicationContext:Context get() = context.applicationContext
-    private val bleScanManager = BleScanManager(this, dispatcher)
-    val scanner get() = bleScanManager
+    override val applicationContext:Context get() = context.applicationContext
 
-    private val bleGattManager = BleGattManager(this, dispatcher)
-    val connector get() = bleGattManager
+    val bleScanManager: BleScanManager = BleScanManager(this, dispatcher)
+    val bleGattManager: BleGattManager = BleGattManager(this, dispatcher)
+    val bleBondManager: BleBondManager = BleBondManager(this, dispatcher)
 
-    private val bleBondManager = BleBondManager(this, dispatcher)
-    val bonder get() = bleBondManager
+    override val stateFlowScanState get() = bleScanManager.stateFlowScanState
+    override val scanState get()     = bleScanManager.scanState
 
-    val stateFlowScanState get() = bleScanManager.stateFlowScanState
-    val scanState get()     = bleScanManager.scanState
+    override val sharedFlowScanResult get() = bleScanManager.sharedFlowScanResult
+    override val scanResults get() = bleScanManager.results
 
-    val sharedFlowScanResult get() = bleScanManager.sharedFlowScanResult
-    val scanResults get() = bleScanManager.results
+    override val stateFlowScanError get() = bleScanManager.stateFlowError
+    override val scanError get()     = bleScanManager.scanError
 
-    val stateFlowScanError get() = bleScanManager.stateFlowError
-    val scanError get()     = bleScanManager.scanError
+    override val stateFlowConnectState get() = bleGattManager.stateFlowConnectState
+    override val connectState get() = bleGattManager.connectState
 
-    val stateFlowConnectState get() = bleGattManager.stateFlowConnectState
-    val connectState get() = bleGattManager.connectState
+    override val stateFlowConnectStateCode get() = bleGattManager.stateFlowConnectStateCode
 
-    val stateFlowConnectStateCode get() = bleGattManager.stateFlowConnectStateCode
+    override val stateFlowGatt get() = bleGattManager.stateFlowGatt
+    override val bluetoothGatt get() = bleGattManager.bluetoothGatt
 
-    val stateFlowGatt get() = bleGattManager.stateFlowGatt
-    val bluetoothGatt get() = bleGattManager.bluetoothGatt
+    override val stateFlowBondState get() = bleBondManager.stateFlowBond
+    override val stateBond get() = bleBondManager.stateBond
 
-    val stateFlowBondState get() = bleBondManager.stateFlowBond
-    val stateBond get() = bleBondManager.stateBond
-
-    fun bondRequest(bluetoothDevice: BluetoothDevice) = bleBondManager.bondRequest(bluetoothDevice)
+    override fun bondRequest(bluetoothDevice: BluetoothDevice)
+        = bleBondManager.bondRequest(bluetoothDevice)
 
     override fun onCreate(owner: LifecycleOwner) {
         super.onCreate(owner)
@@ -55,17 +58,22 @@ class BleManager constructor(private val context: Context,
         owner.lifecycle.addObserver(bleBondManager)
     }
 
-    fun startScan(addresses: List<String> = listOf(),
-                  names: List<String> = listOf(),
-                  services: List<String> = listOf(),
-                  stopOnFind: Boolean = false,
-                  filterRepeatable: Boolean = true,
-                  stopTimeout: Long = 0L
-    ) : Boolean = bleScanManager.startScan(addresses, names, services,
-        stopOnFind, filterRepeatable, stopTimeout)
+    override
+    fun startScan(addresses: List<String>,
+                  names: List<String>,
+                  services: List<String>,
+                  stopOnFind: Boolean,
+                  filterRepeatable: Boolean,
+                  stopTimeout: Long
+    ) : Boolean = bleScanManager.startScan( addresses, names, services,
+                                            stopOnFind, filterRepeatable, stopTimeout )
 
-    fun stopScan() = bleScanManager.stopScan()
+    override fun stopScan() = bleScanManager.stopScan()
 
-    fun connect(address: String) = bleGattManager.connect(address)
-    fun disconnect() = bleGattManager.disconnect()
+    override fun connect(address: String) = bleGattManager.connect(address)
+    override fun disconnect() = bleGattManager.disconnect()
+
+    override fun getScanIdling(name: String?): BleIdling = bleScanManager.getScanIdling(name)
+    override fun getGattIdling():BleIdling = bleGattManager.getGattIdling()
+
 }

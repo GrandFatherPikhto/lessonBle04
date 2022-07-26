@@ -48,16 +48,15 @@ class MainActivityTest {
     @Before
     fun setUp() {
         mainActivityRule.scenario.onActivity {
-            IdlingRegistry.getInstance().register(bleManager.scanner.getScanIdling(name = BLE_NAME))
-            IdlingRegistry.getInstance().register(bleManager.connector.getConnectIdling())
-            // intending(not(isInternal())).respondWith
+            IdlingRegistry.getInstance().register(bleManager.getScanIdling(name = BLE_NAME))
+            IdlingRegistry.getInstance().register(bleManager.getGattIdling())
         }
     }
 
     @After
     fun tearDown() {
-        IdlingRegistry.getInstance().unregister(bleManager.scanner.getScanIdling())
-        IdlingRegistry.getInstance().unregister(bleManager.connector.getConnectIdling())
+        IdlingRegistry.getInstance().unregister(bleManager.getScanIdling())
+        IdlingRegistry.getInstance().unregister(bleManager.getGattIdling())
     }
 
     private fun withDrawable(@DrawableRes id: Int) = object : TypeSafeMatcher<View>() {

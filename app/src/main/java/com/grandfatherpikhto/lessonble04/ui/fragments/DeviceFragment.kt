@@ -11,10 +11,7 @@ import androidx.fragment.app.clearFragmentResult
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.grandfatherpikhto.blin.BleBondManager
-import com.grandfatherpikhto.blin.BleGattManager
-import com.grandfatherpikhto.blin.BleManager
-import com.grandfatherpikhto.blin.BleScanManager
+import com.grandfatherpikhto.blin.*
 import com.grandfatherpikhto.lessonble04.LessonBle04App
 import com.grandfatherpikhto.lessonble04.R
 import com.grandfatherpikhto.lessonble04.databinding.FragmentDeviceBinding
@@ -41,7 +38,7 @@ class DeviceFragment : Fragment() {
         BleDeviceViewModelProviderFactory(requireActivity().application)
     }
 
-    private val _bleManager: BleManager? by lazy {
+    private val _bleManager: BleManagerInterface? by lazy {
         (requireActivity().application as LessonBle04App).bleManager
     }
     private val bleManager get() = _bleManager!!
@@ -163,7 +160,7 @@ class DeviceFragment : Fragment() {
         binding.ivBlePaired.setOnClickListener { _ ->
             mainActivityViewModel.scanResult?.let { scanResult ->
                 if (scanResult.device.bondState != BluetoothDevice.BOND_BONDED) {
-                    bleManager.bonder.bondRequest(scanResult.device)
+                    bleManager.bondRequest(scanResult.device)
                 }
             }
         }

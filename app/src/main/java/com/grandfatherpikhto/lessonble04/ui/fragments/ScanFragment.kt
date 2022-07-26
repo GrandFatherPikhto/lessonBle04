@@ -11,6 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.grandfatherpikhto.blin.BleManager
+import com.grandfatherpikhto.blin.BleManagerInterface
 import com.grandfatherpikhto.blin.BleScanManager
 import com.grandfatherpikhto.lessonble04.LessonBle04App
 import com.grandfatherpikhto.lessonble04.R
@@ -39,7 +40,7 @@ class ScanFragment : Fragment() {
         BleScanViewModelProviderFactory(requireActivity().application)
     }
 
-    private val _bleManager:BleManager? by lazy {
+    private val _bleManager:BleManagerInterface? by lazy {
         (requireActivity().application as LessonBle04App).bleManager
     }
     private val bleManager get() = _bleManager!!

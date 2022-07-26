@@ -51,10 +51,10 @@ class BleGattManager constructor(private val bleManager: BleManager,
     val stateFlowGatt get() = mutableStateFlowGatt.asStateFlow()
     val bluetoothGatt:BluetoothGatt? get() = mutableStateFlowGatt.value
 
-    val bleScanManager = bleManager.scanner
+    val bleScanManager = bleManager.bleScanManager
 
     private var connectIdling: BleIdling? = null
-    fun getConnectIdling() : BleIdling {
+    fun getGattIdling() : BleIdling {
         val idling = BleIdling.getInstance()
         if (connectIdling == null) {
             connectIdling = idling
