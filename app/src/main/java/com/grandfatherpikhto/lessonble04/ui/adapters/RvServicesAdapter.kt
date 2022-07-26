@@ -16,7 +16,7 @@ class RvServicesAdapter : RecyclerView.Adapter<RvServiceHolder>() {
         if (newValue == null) {
             notifyItemRangeRemoved(0, oldValue?.services?.size ?: 0)
         } else {
-            notifyItemRangeInserted(0, newValue?.services?.size ?: 0)
+            notifyItemRangeInserted(0, newValue.services?.size ?: 0)
         }
     }
 

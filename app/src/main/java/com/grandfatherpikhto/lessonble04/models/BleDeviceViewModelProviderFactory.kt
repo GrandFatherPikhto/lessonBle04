@@ -1,13 +1,15 @@
 package com.grandfatherpikhto.lessonble04.models
 
 import android.app.Application
+import androidx.annotation.NonNull
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.grandfatherpikhto.lessonble04.LessonBle04App
 import java.lang.Exception
 
+@Suppress("UNCHECKED_CAST")
 class BleDeviceViewModelProviderFactory constructor(private val application: Application): ViewModelProvider.Factory {
-    private val logTag = this.javaClass.simpleName
+    @NonNull
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         (application.applicationContext as LessonBle04App).bleManager?.let {
             return DeviceViewModel(it) as T

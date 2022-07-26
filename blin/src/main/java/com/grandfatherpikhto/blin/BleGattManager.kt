@@ -7,6 +7,7 @@ import android.bluetooth.BluetoothProfile
 import android.util.Log
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import com.grandfatherpikhto.blin.idling.BleIdling
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -52,6 +53,25 @@ class BleGattManager constructor(private val bleManager: BleManager,
 
     val bleScanManager = bleManager.scanner
 
+    private var connectIdling: BleIdling? = null
+    fun getConnectIdling() : BleIdling {
+        val idling = BleIdling.getInstance()
+        if (connectIdling == null) {
+            connectIdling = idling
+            scope.launch {
+                connectIdling?.let { idling ->
+                    stateFlowConnectState.collect { state ->
+                        if (state == State.Connected) {
+                            idling.completed = true
+                        }
+                    }
+                }
+            }
+        }
+        return idling
+    }
+
+
     init {
         scope.launch {
             bleScanManager.stateFlowScanState.collect { scanState ->
@@ -69,10 +89,6 @@ class BleGattManager constructor(private val bleManager: BleManager,
                 }
             }
         }
-    }
-
-    override fun onCreate(owner: LifecycleOwner) {
-        super.onCreate(owner)
     }
 
     override fun onDestroy(owner: LifecycleOwner) {
@@ -96,6 +112,7 @@ class BleGattManager constructor(private val bleManager: BleManager,
     fun connect(address:String) : BluetoothGatt? {
         Log.d(logTag, "connect($address)")
         if (connectState == State.Disconnected) {
+            connectIdling?.completed = false
             bleManager.bluetoothAdapter.getRemoteDevice(address)?.let { device ->
                 mutableStateFlowConnectState.tryEmit(State.Connecting)
                 bluetoothDevice = device

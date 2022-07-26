@@ -4,11 +4,11 @@ import androidx.test.espresso.IdlingResource
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.properties.Delegates
 
-class ScanIdling : IdlingResource {
+class BleIdling : IdlingResource {
     companion object {
-        private var scanIdling:ScanIdling? = null
-        fun getInstance() : ScanIdling {
-            return scanIdling ?: ScanIdling()
+        private var bleIdling:BleIdling? = null
+        fun getInstance() : BleIdling {
+            return bleIdling ?: BleIdling()
         }
     }
 
@@ -16,7 +16,7 @@ class ScanIdling : IdlingResource {
 
     private var isNavigated = AtomicBoolean(true)
 
-    var scanned by Delegates.observable(true) { _, _, newState ->
+    var completed by Delegates.observable(true) { _, _, newState ->
         isNavigated.set(newState)
         resourceCallback?.let { callback ->
             if (newState) {

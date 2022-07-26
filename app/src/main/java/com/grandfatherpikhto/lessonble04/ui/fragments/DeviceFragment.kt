@@ -57,11 +57,11 @@ class DeviceFragment : Fragment() {
                         when(state) {
                             BleGattManager.State.Disconnected -> {
                                 actionConnect.setIcon(R.drawable.ic_connect)
-                                actionConnect.title = getString(R.string.scan_start)
+                                actionConnect.title = getString(R.string.device_connect)
                             }
                             BleGattManager.State.Connected -> {
                                 actionConnect.setIcon(R.drawable.ic_disconnect)
-                                actionConnect.title = getString(R.string.scan_start)
+                                actionConnect.title = getString(R.string.device_disconnect)
                             }
                             else -> { }
                         }
@@ -123,7 +123,7 @@ class DeviceFragment : Fragment() {
                 tvBleAddress.text = scanResult.device.address
                 tvBleName.text = scanResult.device.name ?: getString(R.string.unknown_device)
                 tvBleRssi.text = getString(R.string.rssi_title, scanResult.rssi)
-
+                Log.d(logTag, "bondState = ${scanResult.device.bondState} {${BluetoothDevice.BOND_BONDED}}")
                 if (scanResult.device.bondState == BluetoothDevice.BOND_BONDED) {
                     ivBlePaired.setImageResource(R.drawable.ic_paired)
                 } else {
@@ -172,8 +172,6 @@ class DeviceFragment : Fragment() {
             deviceViewModel.stateFlowBondState.collect { bondState ->
                 if (bondState == BleBondManager.State.Bondend) {
                     binding.ivBlePaired.setImageResource(R.drawable.ic_paired)
-                } else {
-                    binding.ivBlePaired.setImageResource(R.drawable.ic_unpaired)
                 }
             }
         }

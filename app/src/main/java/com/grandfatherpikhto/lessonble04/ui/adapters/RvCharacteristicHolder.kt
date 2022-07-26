@@ -5,6 +5,7 @@ import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import com.grandfatherpikhto.lessonble04.databinding.LayoutCharacteristicBinding
 
+@OptIn(ExperimentalUnsignedTypes::class)
 class RvCharacteristicHolder(view: View) : RecyclerView.ViewHolder(view) {
     private val logTag = this.javaClass.simpleName
     private val binding = LayoutCharacteristicBinding.bind(view)

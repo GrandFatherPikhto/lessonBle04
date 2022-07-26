@@ -33,7 +33,7 @@ class RvCharacteristicsAdapter : RecyclerView.Adapter<RvCharacteristicHolder> ()
 
     override fun onBindViewHolder(holder: RvCharacteristicHolder, position: Int) {
         bluetoothGattService?.let { service ->
-            service?.characteristics?.let { characteristics ->
+            service.characteristics?.let { characteristics ->
                 holder.itemView.setOnClickListener { view ->
                     handlerClick?.let { it(characteristics[position], view) }
                 }
