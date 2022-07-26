@@ -56,5 +56,4 @@ interface BleManagerInterface : DefaultLifecycleObserver {
 
     fun getScanIdling(name: String? = null): BleIdling
     fun getGattIdling(): BleIdling
-
 }
