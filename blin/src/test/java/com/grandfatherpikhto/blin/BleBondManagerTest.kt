@@ -52,12 +52,14 @@ class BleBondManagerTest {
 
     @Test
     fun bondDevice() = runTest(UnconfinedTestDispatcher()) {
+        // Буквы адреса должны быть в ВЕРХНЕМ регистре
         val address = Random.nextBytes(6)
-            .joinToString(":") { String.format("%02x", it)}
-        val bluetoothDevice = mockBluetoothDevice(address = address, name = NAME)
+            .joinToString(":") { String.format("%02X", it)}
+        val bluetoothDevice = mockBluetoothDevice(address = address, name = "BLE_DEVICE")
         lenient().`when`(bluetoothDevice.bondState).thenReturn(BluetoothDevice.BOND_NONE)
         lenient().`when`(bluetoothDevice.createBond()).thenReturn(true)
         assertEquals(BleBondManager.State.None, bleManager.stateBond)
+        // bleManager.bondRequest(address)
         bleManager.bleBondManager.bondRequest(bluetoothDevice)
         assertEquals(BleBondManager.State.Bonding, bleManager.stateBond)
         lenient().`when`(bluetoothDevice.bondState).thenReturn(BluetoothDevice.BOND_BONDED)
