@@ -48,7 +48,7 @@ class BleScanManagerTest {
         scanResults.forEach { scanResult ->
             bleManager.bleScanManager.onReceiveScanResult(scanResult)
         }
-        assertEquals(bleManager.bleScanManager.devices, scanResults.map { it.device })
+        assertEquals(bleManager.bleScanManager.scanResults.map { it.device }, scanResults.map { it.device })
         bleManager.stopScan()
         assertEquals(BleScanManager.State.Stopped, bleManager.scanState)
     }
@@ -66,7 +66,8 @@ class BleScanManagerTest {
             bleManager.bleScanManager.onReceiveScanResult(scanResult)
         }
 
-        assertEquals(listOf(filterScanResult), bleManager.scanResults)
+        assertEquals(listOf(filterScanResult.device),
+            bleManager.bleScanManager.scanResults.map { it.device })
         assertEquals(BleScanManager.State.Stopped, bleManager.scanState)
     }
 
@@ -81,7 +82,8 @@ class BleScanManagerTest {
         scanResults.forEach { scanResult ->
             bleManager.bleScanManager.onReceiveScanResult(scanResult)
         }
-        assertEquals(bleManager.scanResults, listOf(filterScanResult))
+        assertEquals(listOf(filterScanResult.device),
+            bleManager.bleScanManager.scanResults.map { it.device })
         assertEquals(BleScanManager.State.Stopped, bleManager.scanState)
     }
 }

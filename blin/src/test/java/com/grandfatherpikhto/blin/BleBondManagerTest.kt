@@ -1,7 +1,9 @@
 package com.grandfatherpikhto.blin
 
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothManager
 import android.content.Context
+import androidx.core.content.getSystemService
 import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -12,9 +14,12 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mock
+import org.mockito.Mockito.any
 import org.mockito.Mockito.lenient
 import org.mockito.MockitoAnnotations
 import org.robolectric.RobolectricTestRunner
+import kotlin.random.Random
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
@@ -30,6 +35,11 @@ class BleBondManagerTest {
             ApplicationProvider.getApplicationContext<Context?>().applicationContext,
             UnconfinedTestDispatcher())
 
+    private val bluetoothManager =
+        (ApplicationProvider.getApplicationContext<Context?>()
+            .getSystemService<BluetoothManager>())!!
+    private val bluetoothAdapter = bluetoothManager.adapter
+
     @Before
     fun setUp() {
         closeable = MockitoAnnotations.openMocks(this)
@@ -42,11 +52,13 @@ class BleBondManagerTest {
 
     @Test
     fun bondDevice() = runTest(UnconfinedTestDispatcher()) {
-        val bluetoothDevice = mockBluetoothDevice(address = ADDRESS, name = NAME)
+        val address = Random.nextBytes(6)
+            .joinToString(":") { String.format("%02x", it)}
+        val bluetoothDevice = mockBluetoothDevice(address = address, name = NAME)
         lenient().`when`(bluetoothDevice.bondState).thenReturn(BluetoothDevice.BOND_NONE)
         lenient().`when`(bluetoothDevice.createBond()).thenReturn(true)
         assertEquals(BleBondManager.State.None, bleManager.stateBond)
-        bleManager.bondRequest(bluetoothDevice)
+        bleManager.bleBondManager.bondRequest(bluetoothDevice)
         assertEquals(BleBondManager.State.Bonding, bleManager.stateBond)
         lenient().`when`(bluetoothDevice.bondState).thenReturn(BluetoothDevice.BOND_BONDED)
         bleManager.bleBondManager.onSetBondingDevice(bluetoothDevice, BluetoothDevice.BOND_NONE, BluetoothDevice.BOND_BONDED)
