@@ -1,19 +1,18 @@
 package com.grandfatherpikhto.lessonble04.ui
 
 import android.os.Bundle
-import android.util.Log
-import androidx.appcompat.app.AppCompatActivity
-import androidx.navigation.findNavController
-import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.navigateUp
-import androidx.navigation.ui.setupActionBarWithNavController
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.MenuProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.findNavController
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.navigateUp
+import androidx.navigation.ui.setupActionBarWithNavController
 import com.grandfatherpikhto.blin.BleManager
 import com.grandfatherpikhto.blin.BleManagerInterface
 import com.grandfatherpikhto.blin.FakeBleManager
@@ -29,24 +28,13 @@ import kotlin.system.exitProcess
 
 class MainActivity : AppCompatActivity() {
 
+    companion object {
+        const val FAKE = "fake_debug"
+    }
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
-    private val logTag = this.javaClass.simpleName
 
-    private val _bleManager : BleManager? by lazy {
-        BleManager(applicationContext).let {
-            (application as LessonBle04App).bleManager = it
-            it
-        }
-    }
-//    private val _bleManager : BleManagerInterface? by lazy {
-//        FakeBleManager().let {
-//            (application as LessonBle04App).bleManager = it
-//            it
-//        }
-//
-//    }
-    private val bleManager get() = _bleManager!!
+    private lateinit var bleManager:BleManagerInterface
 
     private val mainActivityViewModel by viewModels<MainActivityViewModel>()
 
@@ -66,7 +54,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        lifecycle.addObserver(bleManager)
+        initBleManager()
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -109,5 +97,20 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun initBleManager() {
+        var fake = false
+        intent.extras?.let { extras ->
+            fake = extras.getBoolean(FAKE, false)
+        }
+
+        if (fake) {
+            bleManager = FakeBleManager()
+        } else {
+            bleManager = BleManager(applicationContext)
+        }
+        (applicationContext as LessonBle04App).bleManager = bleManager
+        lifecycle.addObserver(bleManager)
     }
 }

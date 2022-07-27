@@ -1,11 +1,14 @@
 package com.grandfatherpikhto.lessonble04.ui
 
+import android.content.Intent
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.rules.ActivityScenarioRule
+import androidx.test.ext.junit.rules.activityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry
@@ -27,8 +30,11 @@ import org.junit.Test
 @LargeTest
 class MainActivityTest {
 
+    private val argIntent = Intent(ApplicationProvider.getApplicationContext(), MainActivity::class.java)
+        .putExtra(MainActivity.FAKE, true)
+
     @get:Rule
-    val mainActivityRule = ActivityScenarioRule(MainActivity::class.java)
+    val mainActivityRule = activityScenarioRule<MainActivity>(argIntent)
     private val applicationContext = InstrumentationRegistry
         .getInstrumentation().targetContext.applicationContext
 
