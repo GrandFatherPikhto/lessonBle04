@@ -23,18 +23,24 @@ class ConnectingIdling(bleManager: BleManagerInterface) : IdlingResource {
 
     private var isIdling = AtomicBoolean(true)
 
+    var idling by Delegates.observable(false) { _, _, newState ->
+        isIdling.set(newState)
+        if (newState) {
+            resourceCallback?.let { callback ->
+                callback.onTransitionToIdle()
+            }
+        }
+    }
+
     init {
         scope.launch {
             bleManager.stateFlowConnectState.collect { state ->
                 when(state) {
                     BleGattManager.State.Connected -> {
-                        isIdling.set(true)
-                        resourceCallback?.let { callback ->
-                            callback.onTransitionToIdle()
-                        }
+                        idling = true
                     }
                     BleGattManager.State.Connecting -> {
-                        isIdling.set(false)
+                        idling = false
                     }
                     else -> { }
                 }

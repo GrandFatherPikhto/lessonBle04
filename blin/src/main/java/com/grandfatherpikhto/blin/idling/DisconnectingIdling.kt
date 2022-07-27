@@ -7,6 +7,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.properties.Delegates
 
 class DisconnectingIdling (private val bleManager: BleManagerInterface): IdlingResource {
     companion object {
@@ -22,18 +23,24 @@ class DisconnectingIdling (private val bleManager: BleManagerInterface): IdlingR
 
     private val scope = CoroutineScope(Dispatchers.IO)
 
+    var idling by Delegates.observable(false) { _, _, newState ->
+        isIdling.set(newState)
+        if (newState) {
+            resourceCallback?.let { callback ->
+                callback.onTransitionToIdle()
+            }
+        }
+    }
+
     init {
         scope.launch {
             bleManager.stateFlowConnectState.collect { state ->
                 when(state) {
                     BleGattManager.State.Disconnected -> {
-                        isIdling.set(true)
-                        resourceCallback?.let { callback ->
-                            callback.onTransitionToIdle()
-                        }
+                        idling = true
                     }
                     BleGattManager.State.Disconnecting -> {
-                        isIdling.set(false)
+                        idling = false
                     }
                     else -> { }
                 }
