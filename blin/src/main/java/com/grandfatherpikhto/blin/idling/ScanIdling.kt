@@ -24,6 +24,12 @@ class ScanIdling (private val bleManager: BleManagerInterface) : IdlingResource 
     private var isIdling = AtomicBoolean(false)
 
     var idling by Delegates.observable(false) { _, _, newState ->
+        isIdling.set(newState)
+        if (newState) {
+            resourceCallback?.let { callback ->
+                callback.onTransitionToIdle()
+            }
+        }
     }
 
     init {
@@ -31,13 +37,10 @@ class ScanIdling (private val bleManager: BleManagerInterface) : IdlingResource 
             bleManager.stateFlowScanState.collect { state ->
                 when(state) {
                     BleScanManager.State.Stopped -> {
-                        isIdling.set(true)
-                        resourceCallback?.let { callback ->
-                            callback.onTransitionToIdle()
-                        }
+                        idling = true
                     }
                     BleScanManager.State.Scanning -> {
-                        isIdling.set(false)
+                        idling = false
                     }
                     else -> { }
                 }
