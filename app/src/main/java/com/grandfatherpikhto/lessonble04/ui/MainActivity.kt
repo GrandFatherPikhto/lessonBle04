@@ -1,6 +1,7 @@
 package com.grandfatherpikhto.lessonble04.ui
 
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
@@ -14,6 +15,8 @@ import androidx.activity.viewModels
 import androidx.core.view.MenuProvider
 import androidx.lifecycle.lifecycleScope
 import com.grandfatherpikhto.blin.BleManager
+import com.grandfatherpikhto.blin.BleManagerInterface
+import com.grandfatherpikhto.blin.FakeBleManager
 import com.grandfatherpikhto.blin.permissions.RequestPermissions
 import com.grandfatherpikhto.lessonble04.LessonBle04App
 import com.grandfatherpikhto.lessonble04.R
@@ -28,6 +31,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
+    private val logTag = this.javaClass.simpleName
 
     private val _bleManager : BleManager? by lazy {
         BleManager(applicationContext).let {
@@ -35,8 +39,15 @@ class MainActivity : AppCompatActivity() {
             it
         }
     }
-
+//    private val _bleManager : BleManagerInterface? by lazy {
+//        FakeBleManager().let {
+//            (application as LessonBle04App).bleManager = it
+//            it
+//        }
+//
+//    }
     private val bleManager get() = _bleManager!!
+
     private val mainActivityViewModel by viewModels<MainActivityViewModel>()
 
     private val menuProvider = object : MenuProvider {

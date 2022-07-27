@@ -5,6 +5,8 @@ import android.bluetooth.BluetoothGattService
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.grandfatherpikhto.blin.data.BleCharacteristic
+import com.grandfatherpikhto.blin.data.BleService
 import com.grandfatherpikhto.lessonble04.R
 import com.grandfatherpikhto.lessonble04.helper.OnClickItemListener
 import com.grandfatherpikhto.lessonble04.helper.OnLongClickItemListener
@@ -12,17 +14,17 @@ import kotlin.properties.Delegates
 
 class RvCharacteristicsAdapter : RecyclerView.Adapter<RvCharacteristicHolder> () {
     private val logTag = this.javaClass.simpleName
-    var bluetoothGattService: BluetoothGattService?
+    var bleService: BleService?
             by Delegates.observable(null) { _, oldValue, newValue ->
                 if (newValue == null) {
                     notifyItemRangeRemoved(0, oldValue?.characteristics?.size ?: 0)
                 } else {
-                    notifyItemRangeInserted(0, newValue.characteristics?.size ?: 0)
+                    notifyItemRangeInserted(0, newValue.characteristics.size)
                     // Log.d(logTag, "size: ${newValue?.characteristics?.size ?: 0}")
                 }
             }
-    private var handlerClick: OnClickItemListener<BluetoothGattCharacteristic>? = null
-    private var handlerLongClick: OnLongClickItemListener<BluetoothGattCharacteristic>? = null
+    private var handlerClick: OnClickItemListener<BleCharacteristic>? = null
+    private var handlerLongClick: OnLongClickItemListener<BleCharacteristic>? = null
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RvCharacteristicHolder {
@@ -32,8 +34,8 @@ class RvCharacteristicsAdapter : RecyclerView.Adapter<RvCharacteristicHolder> ()
     }
 
     override fun onBindViewHolder(holder: RvCharacteristicHolder, position: Int) {
-        bluetoothGattService?.let { service ->
-            service.characteristics?.let { characteristics ->
+        bleService?.let { service ->
+            service.characteristics.let { characteristics ->
                 holder.itemView.setOnClickListener { view ->
                     handlerClick?.let { it(characteristics[position], view) }
                 }
@@ -48,5 +50,5 @@ class RvCharacteristicsAdapter : RecyclerView.Adapter<RvCharacteristicHolder> ()
         }
     }
 
-    override fun getItemCount(): Int = bluetoothGattService?.characteristics?.size ?: 0
+    override fun getItemCount(): Int = bleService?.characteristics?.size ?: 0
 }

@@ -10,14 +10,12 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.grandfatherpikhto.blin.BleManager
 import com.grandfatherpikhto.blin.BleManagerInterface
 import com.grandfatherpikhto.blin.BleScanManager
 import com.grandfatherpikhto.lessonble04.LessonBle04App
 import com.grandfatherpikhto.lessonble04.R
 import com.grandfatherpikhto.lessonble04.databinding.FragmentScanBinding
 import com.grandfatherpikhto.lessonble04.helper.linkMenu
-import com.grandfatherpikhto.lessonble04.models.BleScanViewModelProviderFactory
 import com.grandfatherpikhto.lessonble04.models.MainActivityViewModel
 import com.grandfatherpikhto.lessonble04.models.ScanViewModel
 import com.grandfatherpikhto.lessonble04.ui.adapters.RvBtAdapter
@@ -36,9 +34,7 @@ class ScanFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val mainActivityViewModel by activityViewModels<MainActivityViewModel>()
-    private val scanViewModel by viewModels<ScanViewModel> {
-        BleScanViewModelProviderFactory(requireActivity().application)
-    }
+    private val scanViewModel by viewModels<ScanViewModel>()
 
     private val _bleManager:BleManagerInterface? by lazy {
         (requireActivity().application as LessonBle04App).bleManager
@@ -50,7 +46,8 @@ class ScanFragment : Fragment() {
             menuInflater.inflate(R.menu.menu_scan, menu)
             menu.findItem(R.id.action_scan).let { actionScan ->
                 lifecycleScope.launch {
-                    scanViewModel.stateFLowScanState.collect { state ->
+                    scanViewModel.stateFlowScanState.collect { state ->
+                        Log.d(logTag, "New State: $state")
                         when(state) {
                             BleScanManager.State.Stopped -> {
                                 actionScan.setIcon(R.drawable.ic_scan)
@@ -100,6 +97,7 @@ class ScanFragment : Fragment() {
     ): View {
 
         _binding = FragmentScanBinding.inflate(inflater, container, false)
+        scanViewModel.changeBleManager(bleManager)
         linkMenu(true, menuProvider)
         return binding.root
 
@@ -119,7 +117,7 @@ class ScanFragment : Fragment() {
         }
 
         lifecycleScope.launch {
-            bleManager.sharedFlowScanResult.collect { scanResult ->
+            scanViewModel.sharedFlowScanResult.collect { scanResult ->
                 rvBtAdapter.addScanResult(scanResult)
             }
         }

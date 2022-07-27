@@ -4,14 +4,15 @@ import android.bluetooth.le.ScanResult
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.grandfatherpikhto.blin.data.BleScanResult
 import com.grandfatherpikhto.lessonble04.R
 import com.grandfatherpikhto.lessonble04.helper.OnClickItemListener
 import com.grandfatherpikhto.lessonble04.helper.OnLongClickItemListener
 
 class RvBtAdapter : RecyclerView.Adapter<RvBtHolder> () {
-    private val scanResults = mutableListOf<ScanResult>()
-    private var onClickItemListener: OnClickItemListener<ScanResult>? = null
-    private var onLongClickItemListener: OnLongClickItemListener<ScanResult>? = null
+    private val scanResults = mutableListOf<BleScanResult>()
+    private var onClickItemListener: OnClickItemListener<BleScanResult>? = null
+    private var onLongClickItemListener: OnLongClickItemListener<BleScanResult>? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RvBtHolder {
         val view = LayoutInflater.from(parent.context)
@@ -36,18 +37,18 @@ class RvBtAdapter : RecyclerView.Adapter<RvBtHolder> () {
 
     override fun getItemCount(): Int = scanResults.size
 
-    fun addScanResult(scanResult: ScanResult) {
-        if (!scanResults.map { it.device }.contains(scanResult.device)) {
-            scanResults.add(scanResult)
-            notifyItemInserted(scanResults.indexOf(scanResult))
+    fun addScanResult(bleScanResult: BleScanResult) {
+        if (!scanResults.map { it.device }.contains(bleScanResult.device)) {
+            scanResults.add(bleScanResult)
+            notifyItemInserted(scanResults.indexOf(bleScanResult))
         }
     }
 
-    fun setItemOnClickListener(onClickItemListener: OnClickItemListener<ScanResult>) {
+    fun setItemOnClickListener(onClickItemListener: OnClickItemListener<BleScanResult>) {
         this.onClickItemListener = onClickItemListener
     }
 
-    fun setItemOnLongCliclListener(onLongClickItemListener: OnLongClickItemListener<ScanResult>) {
+    fun setItemOnLongCliclListener(onLongClickItemListener: OnLongClickItemListener<BleScanResult>) {
         this.onLongClickItemListener = onLongClickItemListener
     }
 }

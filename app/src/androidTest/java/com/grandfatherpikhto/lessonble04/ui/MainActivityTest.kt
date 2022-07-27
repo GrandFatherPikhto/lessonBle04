@@ -1,9 +1,5 @@
 package com.grandfatherpikhto.lessonble04.ui
 
-import android.view.View
-import android.widget.ImageView
-import androidx.annotation.DrawableRes
-import androidx.core.graphics.drawable.toBitmap
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.action.ViewActions.click
@@ -14,6 +10,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry
 import com.grandfatherpikhto.blin.BleManager
+import com.grandfatherpikhto.blin.FakeBleManager
 import com.grandfatherpikhto.lessonble04.LessonBle04App
 
 import org.junit.After
@@ -22,17 +19,13 @@ import org.junit.Rule
 import org.junit.runner.RunWith
 
 import com.grandfatherpikhto.lessonble04.R
-import org.hamcrest.Description
-import org.hamcrest.TypeSafeMatcher
+import com.grandfatherpikhto.lessonble04.helper.withDrawable
 import org.junit.Test
+
 
 @RunWith(AndroidJUnit4::class)
 @LargeTest
 class MainActivityTest {
-    companion object {
-        const val BLE_NAME="LED_STRIP"
-        const val BLE_ADDRESS="01:02:03:04:05:06"
-    }
 
     @get:Rule
     val mainActivityRule = ActivityScenarioRule(MainActivity::class.java)
@@ -48,40 +41,31 @@ class MainActivityTest {
 
     @Before
     fun setUp() {
-        mainActivityRule.scenario.onActivity {
-            IdlingRegistry.getInstance().register((bleManager as BleManager)
-                .bleScanManager.getScanIdling(name = BLE_NAME))
-            IdlingRegistry.getInstance().register((bleManager as BleManager)
-                .bleGattManager.getGattIdling())
-        }
+        mainActivityRule.scenario.onActivity { }
+        IdlingRegistry.getInstance().register((bleManager as FakeBleManager)
+            .scanIdling)
+        IdlingRegistry.getInstance().register((bleManager as FakeBleManager)
+            .connectingIdling)
+        IdlingRegistry.getInstance().register((bleManager as FakeBleManager)
+            .disconnectingIdling)
     }
 
     @After
     fun tearDown() {
-        IdlingRegistry.getInstance().unregister((bleManager as BleManager)
-            .bleScanManager.getScanIdling())
-        IdlingRegistry.getInstance().unregister((bleManager as BleManager)
-            .bleGattManager.getGattIdling())
+        IdlingRegistry.getInstance().unregister((bleManager as FakeBleManager)
+            .scanIdling)
+        IdlingRegistry.getInstance().unregister((bleManager as FakeBleManager)
+            .connectingIdling)
+        IdlingRegistry.getInstance().unregister((bleManager as FakeBleManager)
+            .disconnectingIdling)
     }
 
-    private fun withDrawable(@DrawableRes id: Int) = object : TypeSafeMatcher<View>() {
-        override fun describeTo(description: Description) {
-            description.appendText("ImageView with drawable same as drawable with id $id")
-        }
-
-        override fun matchesSafely(view: View): Boolean {
-            val context = view.context
-            val expectedBitmap = context.getDrawable(id)?.toBitmap()
-
-            return view is ImageView && view.drawable.toBitmap().sameAs(expectedBitmap)
-        }
-    }
-
-    @Test
+    @Test(timeout = 15000)
     fun connectDevice() {
-        onView(withId(R.id.cl_scan)).check(matches(isDisplayed()))
+        onView(withId(R.id.cl_scan_fragment)).check(matches(isDisplayed()))
         onView(withId(R.id.action_scan)).perform(click())
-        onView(withText(BLE_NAME))
+        val scanResult = bleManager.scanResults.filter { it.isConnectable }[0]
+        onView(withText(scanResult.device.name))
             .check(matches(isDisplayed()))
             .perform(click())
         onView(withId(R.id.cl_device)).check(matches(isDisplayed()))

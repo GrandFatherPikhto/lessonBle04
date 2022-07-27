@@ -7,7 +7,6 @@ import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.clearFragmentResult
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -17,7 +16,6 @@ import com.grandfatherpikhto.lessonble04.R
 import com.grandfatherpikhto.lessonble04.databinding.FragmentDeviceBinding
 import com.grandfatherpikhto.lessonble04.helper.linkMenu
 import com.grandfatherpikhto.lessonble04.models.*
-import com.grandfatherpikhto.lessonble04.ui.adapters.RvBtAdapter
 import com.grandfatherpikhto.lessonble04.ui.adapters.RvServicesAdapter
 import kotlinx.coroutines.launch
 
@@ -34,9 +32,7 @@ class DeviceFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val mainActivityViewModel by activityViewModels<MainActivityViewModel>()
-    private val deviceViewModel by viewModels<DeviceViewModel> {
-        BleDeviceViewModelProviderFactory(requireActivity().application)
-    }
+    private val deviceViewModel by viewModels<DeviceViewModel>()
 
     private val _bleManager: BleManagerInterface? by lazy {
         (requireActivity().application as LessonBle04App).bleManager
@@ -73,11 +69,13 @@ class DeviceFragment : Fragment() {
                     when(deviceViewModel.connectState) {
                         BleGattManager.State.Connected -> {
                             bleManager.disconnect()
+                            deviceViewModel.connected = false
                         }
                         BleGattManager.State.Disconnected -> {
                             mainActivityViewModel.scanResult?.let { scanResult ->
                                 Log.d(logTag, "Try Connecting(${scanResult.device.address})")
                                 bleManager.connect(scanResult.device.address)
+                                deviceViewModel.connected = true
                             }
                         }
                         else -> {
@@ -97,12 +95,21 @@ class DeviceFragment : Fragment() {
     ): View {
 
         _binding = FragmentDeviceBinding.inflate(inflater, container, false)
+        deviceViewModel.changeBleManager(bleManager)
         return binding.root
 
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        Log.d(logTag, "Connected: ${deviceViewModel.connected}")
+
+        if (deviceViewModel.connected) {
+            mainActivityViewModel.scanResult?.let {
+                bleManager.connect(it.device.address)
+            }
+        }
+
         linkMenu(true, menuProvider)
         binding.apply {
             rvServices.adapter = rvServicesAdapter
@@ -110,8 +117,8 @@ class DeviceFragment : Fragment() {
         }
 
         lifecycleScope.launch {
-            deviceViewModel.stateFlowGatt.collect { bluetoothGatt ->
-                rvServicesAdapter.bluetoothGatt = bluetoothGatt
+            deviceViewModel.stateFlowGatt.collect { bleGatt ->
+                rvServicesAdapter.bleGatt = bleGatt
             }
         }
 
@@ -135,9 +142,11 @@ class DeviceFragment : Fragment() {
                     BleGattManager.State.Disconnected -> {
                         binding.ivBleConnected.setImageResource(R.drawable.ic_connect_big)
                     }
+
                     BleGattManager.State.Connected -> {
                         binding.ivBleConnected.setImageResource(R.drawable.ic_disconnect_big)
                     }
+
                     else -> { }
                 }
             }
@@ -147,10 +156,12 @@ class DeviceFragment : Fragment() {
             when(deviceViewModel.connectState) {
                 BleGattManager.State.Connected -> {
                     bleManager.disconnect()
+                    deviceViewModel.connected = false
                 }
                 BleGattManager.State.Disconnected -> {
                     mainActivityViewModel.scanResult?.let { scanResult ->
                         bleManager.connect(scanResult.device.address)
+                        deviceViewModel.connected = true
                     }
                 }
                 else -> { }
@@ -160,13 +171,13 @@ class DeviceFragment : Fragment() {
         binding.ivBlePaired.setOnClickListener { _ ->
             mainActivityViewModel.scanResult?.let { scanResult ->
                 if (scanResult.device.bondState != BluetoothDevice.BOND_BONDED) {
-                    bleManager.bondRequest(scanResult.device)
+                    bleManager.bondRequest(scanResult.device.address)
                 }
             }
         }
 
         lifecycleScope.launch {
-            deviceViewModel.stateFlowBondState.collect { bondState ->
+            deviceViewModel.stateFlowBond.collect { bondState ->
                 if (bondState == BleBondManager.State.Bondend) {
                     binding.ivBlePaired.setImageResource(R.drawable.ic_paired)
                 }

@@ -2,6 +2,8 @@ package com.grandfatherpikhto.blin
 
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothManager
+import android.content.Context
 import android.content.IntentFilter
 import android.util.Log
 import androidx.lifecycle.DefaultLifecycleObserver
@@ -50,17 +52,28 @@ class BleBondManager (private val bleManager: BleManager,
         super.onDestroy(owner)
     }
 
-    fun bondRequest(bluetoothDevice: BluetoothDevice) {
+    fun bondRequest(address: String) : Boolean {
+        val bluetoothDevice =
+        (bleManager.applicationContext
+            .getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager)
+            .adapter.getRemoteDevice(address)
+        return bondRequest(bluetoothDevice)
+    }
+
+    fun bondRequest(bluetoothDevice: BluetoothDevice) : Boolean {
         if(bluetoothDevice.bondState == BluetoothDevice.BOND_BONDED) {
             msfState.tryEmit(State.Bondend)
         } else {
             requestDevice = bluetoothDevice
             if (bluetoothDevice.createBond()) {
                 msfState.tryEmit(State.Bonding)
+                return true
             } else {
                 msfState.tryEmit(State.Error)
             }
         }
+
+        return false
     }
 
     private fun makeIntentFilter() = IntentFilter().let { intentFilter ->

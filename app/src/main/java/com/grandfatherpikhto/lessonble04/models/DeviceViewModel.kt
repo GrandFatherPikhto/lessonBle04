@@ -1,19 +1,66 @@
 package com.grandfatherpikhto.lessonble04.models
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
-import com.grandfatherpikhto.blin.BleManager
+import androidx.lifecycle.viewModelScope
+import com.grandfatherpikhto.blin.BleBondManager
+import com.grandfatherpikhto.blin.BleGattManager
 import com.grandfatherpikhto.blin.BleManagerInterface
+import com.grandfatherpikhto.blin.data.BleGatt
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
-class DeviceViewModel (private val bleManager: BleManagerInterface): ViewModel () {
-    val stateFlowConnectState get() = bleManager.stateFlowConnectState
-    val connectState          get() = bleManager.connectState
+class DeviceViewModel: ViewModel () {
 
-    val stateFlowConnectStateCode get() = bleManager.stateFlowConnectStateCode
-    val stateCode                 get() = bleManager.stateFlowConnectStateCode
+    private val logTag = this.javaClass.simpleName
 
-    val stateFlowGatt get() = bleManager.stateFlowGatt
-    val bluetoothGatt get() = bleManager.bluetoothGatt
+    private val mutableStateFlowConnectState = MutableStateFlow(BleGattManager.State.Disconnected)
+    val stateFlowConnectState get() = mutableStateFlowConnectState.asStateFlow()
+    val connectState          get() = mutableStateFlowConnectState.value
 
-    val stateFlowBondState get() = bleManager.stateFlowBondState
-    val stateBond          get() = bleManager.stateBond
+    private val mutableStateFlowStateCode = MutableStateFlow(-1)
+    val stateFlowConnectStateCode get() = mutableStateFlowStateCode.asStateFlow()
+    val stateCode                 get() = mutableStateFlowStateCode.value
+
+    private val mutableStateFlowBleGatt = MutableStateFlow<BleGatt?>(null)
+    val stateFlowGatt get() = mutableStateFlowBleGatt.asStateFlow()
+    val bluetoothGatt get() = mutableStateFlowBleGatt.value
+
+    private val mutableStateFlowBond = MutableStateFlow(BleBondManager.State.None)
+    val stateFlowBond get() = mutableStateFlowBond.asStateFlow()
+    val stateBond     get() = mutableStateFlowBond.value
+
+    var connected = false
+
+    fun changeBleManager(bleManager: BleManagerInterface) {
+        viewModelScope.launch {
+            bleManager.stateFlowConnectState.collect {
+                mutableStateFlowConnectState.tryEmit(it)
+            }
+        }
+
+        viewModelScope.launch {
+            bleManager.sharedFlowConnectStateCode.collect {
+                mutableStateFlowStateCode.tryEmit(it)
+            }
+        }
+
+        viewModelScope.launch {
+            bleManager.stateFlowGatt.collect {
+                mutableStateFlowBleGatt.tryEmit(it)
+            }
+        }
+
+        viewModelScope.launch {
+            bleManager.stateFlowBondState.collect {
+                mutableStateFlowBond.tryEmit(it)
+            }
+        }
+    }
+
+    override fun onCleared() {
+        Log.d(logTag, "onCleared()")
+        super.onCleared()
+    }
 }

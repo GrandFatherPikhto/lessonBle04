@@ -13,13 +13,11 @@ import android.os.ParcelUuid
 import android.util.Log
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import com.grandfatherpikhto.blin.idling.BleIdling
+import com.grandfatherpikhto.blin.idling.ScanIdling
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.*
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class BleScanManager constructor(private val bleManager: BleManager,
                                  ioDispatcher: CoroutineDispatcher = Dispatchers.IO)
     : DefaultLifecycleObserver {
@@ -36,14 +34,14 @@ class BleScanManager constructor(private val bleManager: BleManager,
 
     private val logTag = this.javaClass.simpleName
 
+    private val mutableSharedFlowScanResult = MutableSharedFlow<ScanResult>(replay = 100)
+    val sharedFlowScanResult:SharedFlow<ScanResult> get() = mutableSharedFlowScanResult.asSharedFlow()
+
     private val mutableStateFlowScanState = MutableStateFlow(State.Stopped)
     val stateFlowScanState get() = mutableStateFlowScanState.asStateFlow()
     val scanState get() = mutableStateFlowScanState.value
 
-    private val mutableSharedFlowScanResult = MutableSharedFlow<ScanResult>(replay = 100)
-    val sharedFlowScanResult get() = mutableSharedFlowScanResult.asSharedFlow()
-
-    private val mutableFlowStateError = MutableStateFlow<Int>(-1)
+    private val mutableFlowStateError = MutableStateFlow(-1)
     val stateFlowError get() = mutableFlowStateError.asStateFlow()
     val scanError get() = mutableFlowStateError.value
 
@@ -54,9 +52,7 @@ class BleScanManager constructor(private val bleManager: BleManager,
 
     private var scope = CoroutineScope(ioDispatcher)
     private var notEmitRepeat: Boolean = true
-    private val scanResults = mutableListOf<ScanResult>()
-    val devices get() = scanResults.map { it.device }.toList()
-    val results get() = scanResults.toList()
+    val scanResults = mutableListOf<ScanResult>()
 
     private var stopOnFind = false
     private var stopTimeout = 0L
@@ -65,26 +61,7 @@ class BleScanManager constructor(private val bleManager: BleManager,
     private val names = mutableListOf<String>()
     private val uuids = mutableListOf<ParcelUuid>()
 
-    private var scanIdling: BleIdling? = null
-
-    fun getScanIdling(name: String? = null) : BleIdling {
-        val idling = BleIdling.getInstance()
-        if (scanIdling == null) {
-            scanIdling = idling
-            scope.launch {
-                scanIdling?.let { idling ->
-                    sharedFlowScanResult.collect { scanResult ->
-                        if (name == null) {
-                            idling.completed = true
-                        } else if (name == scanResult.device.name) {
-                            idling.completed = true
-                        }
-                    }
-                }
-            }
-        }
-        return idling
-    }
+    private var scanIdling: ScanIdling? = null
 
     init {
         initScanSettings()
@@ -105,7 +82,7 @@ class BleScanManager constructor(private val bleManager: BleManager,
             mutableStateFlowScanState.tryEmit(State.Stopped)
         }
 
-        scanIdling?.completed = false
+        scanIdling?.idling = false
 
         if (scanState == State.Stopped) {
 
@@ -190,7 +167,6 @@ class BleScanManager constructor(private val bleManager: BleManager,
 
     private fun filterUuids(uuids: Array<ParcelUuid>?) : Boolean {
         if (this.uuids.isEmpty()) return true
-        // println("UUIDS: ${this.uuids}")
         if (uuids.isNullOrEmpty()) return false
         if (this.uuids.containsAll(uuids.toList())) return true
         return false
@@ -203,6 +179,13 @@ class BleScanManager constructor(private val bleManager: BleManager,
         }
     }
 
+    private fun isEmitScanResult(scanResult: ScanResult) : Boolean {
+        val contains = scanResults.map {
+            it.device }.contains(scanResult.device)
+        if (!contains) scanResults.add(scanResult)
+        return !notEmitRepeat || !contains
+    }
+
     @SuppressLint("MissingPermission")
     fun onReceiveScanResult(scanResult: ScanResult) {
         scanResult.device.let { bluetoothDevice ->
@@ -210,21 +193,15 @@ class BleScanManager constructor(private val bleManager: BleManager,
                 .and(filterAddress(bluetoothDevice))
                 .and(filterUuids(bluetoothDevice.uuids))
             ) {
-                val contains = scanResults.map { it.device }.contains(scanResult.device)
-                if (!contains) {
-                    scanResults.add(scanResult)
-                }
-
-                if (!notEmitRepeat || !contains) {
+                if (isEmitScanResult(scanResult)) {
                     mutableSharedFlowScanResult.tryEmit(scanResult)
-
-                    if (stopOnFind &&
-                        (names.isNotEmpty()
-                        .or(addresses.isNotEmpty()
-                        .or(uuids.isNotEmpty())))
-                    ) {
-                        stopScan()
-                    }
+                }
+                if (stopOnFind &&
+                    (names.isNotEmpty()
+                    .or(addresses.isNotEmpty()
+                    .or(uuids.isNotEmpty())))
+                ) {
+                    stopScan()
                 }
             }
         }

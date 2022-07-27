@@ -7,7 +7,7 @@ import android.bluetooth.BluetoothProfile
 import android.util.Log
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import com.grandfatherpikhto.blin.idling.BleIdling
+import com.grandfatherpikhto.blin.idling.ScanIdling
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -44,8 +44,8 @@ class BleGattManager constructor(private val bleManager: BleManager,
     val stateFlowConnectState get() = mutableStateFlowConnectState.asStateFlow()
     val connectState get() = mutableStateFlowConnectState.value
 
-    private val mutableStateFlowConnectStateCode = MutableSharedFlow<Int>(replay = 100)
-    val stateFlowConnectStateCode get() = mutableStateFlowConnectStateCode.asSharedFlow()
+    private val mutableSharedFlowConnectStateCode = MutableSharedFlow<Int>(replay = 100)
+    val stateFlowConnectStateCode get() = mutableSharedFlowConnectStateCode.asSharedFlow()
 
     private val mutableStateFlowGatt = MutableStateFlow<BluetoothGatt?>(null)
     val stateFlowGatt get() = mutableStateFlowGatt.asStateFlow()
@@ -53,32 +53,15 @@ class BleGattManager constructor(private val bleManager: BleManager,
 
     val bleScanManager = bleManager.bleScanManager
 
-    private var connectIdling: BleIdling? = null
-    fun getGattIdling() : BleIdling {
-        val idling = BleIdling.getInstance()
-        if (connectIdling == null) {
-            connectIdling = idling
-            scope.launch {
-                connectIdling?.let { idling ->
-                    stateFlowConnectState.collect { state ->
-                        if (state == State.Connected) {
-                            idling.completed = true
-                        }
-                    }
-                }
-            }
-        }
-        return idling
-    }
-
+    private var connectIdling: ScanIdling? = null
 
     init {
         scope.launch {
             bleScanManager.stateFlowScanState.collect { scanState ->
                 if (attemptReconnect && bluetoothDevice != null &&
                     scanState == BleScanManager.State.Stopped &&
-                    bleScanManager.results.isNotEmpty() &&
-                    bleScanManager.results.last().device.address
+                    bleScanManager.scanResults.isNotEmpty() &&
+                    bleScanManager.scanResults.last().device.address
                         == bluetoothDevice!!.address) {
                     if (reconnectAttempts < MAX_ATTEMPTS) {
                         doConnect()
@@ -112,7 +95,7 @@ class BleGattManager constructor(private val bleManager: BleManager,
     fun connect(address:String) : BluetoothGatt? {
         Log.d(logTag, "connect($address)")
         if (connectState == State.Disconnected) {
-            connectIdling?.completed = false
+            connectIdling?.idling = false
             bleManager.bluetoothAdapter.getRemoteDevice(address)?.let { device ->
                 mutableStateFlowConnectState.tryEmit(State.Connecting)
                 bluetoothDevice = device
@@ -206,7 +189,7 @@ class BleGattManager constructor(private val bleManager: BleManager,
                 }
             }
         } else {
-            mutableStateFlowConnectStateCode.tryEmit(newState)
+            mutableSharedFlowConnectStateCode.tryEmit(newState)
             if (attemptReconnect) {
                 if (reconnectAttempts < MAX_ATTEMPTS) {
                     doRescan()
