@@ -5,8 +5,6 @@ import android.bluetooth.BluetoothGattService
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.grandfatherpikhto.blin.data.BleCharacteristic
-import com.grandfatherpikhto.blin.data.BleService
 import com.grandfatherpikhto.lessonble04.R
 import com.grandfatherpikhto.lessonble04.helper.OnClickItemListener
 import com.grandfatherpikhto.lessonble04.helper.OnLongClickItemListener
@@ -14,7 +12,7 @@ import kotlin.properties.Delegates
 
 class RvCharacteristicsAdapter : RecyclerView.Adapter<RvCharacteristicHolder> () {
     private val logTag = this.javaClass.simpleName
-    var bleService: BleService?
+    var bleService: BluetoothGattService?
             by Delegates.observable(null) { _, oldValue, newValue ->
                 if (newValue == null) {
                     notifyItemRangeRemoved(0, oldValue?.characteristics?.size ?: 0)
@@ -23,8 +21,8 @@ class RvCharacteristicsAdapter : RecyclerView.Adapter<RvCharacteristicHolder> ()
                     // Log.d(logTag, "size: ${newValue?.characteristics?.size ?: 0}")
                 }
             }
-    private var handlerClick: OnClickItemListener<BleCharacteristic>? = null
-    private var handlerLongClick: OnLongClickItemListener<BleCharacteristic>? = null
+    private var handlerClick: OnClickItemListener<BluetoothGattCharacteristic>? = null
+    private var handlerLongClick: OnLongClickItemListener<BluetoothGattCharacteristic>? = null
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RvCharacteristicHolder {

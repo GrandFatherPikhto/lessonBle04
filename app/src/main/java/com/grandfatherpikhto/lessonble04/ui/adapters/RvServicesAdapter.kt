@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.grandfatherpikhto.blin.data.BleGatt
-import com.grandfatherpikhto.blin.data.BleService
 import com.grandfatherpikhto.lessonble04.R
 import com.grandfatherpikhto.lessonble04.helper.OnClickItemListener
 import com.grandfatherpikhto.lessonble04.helper.OnLongClickItemListener
@@ -22,8 +21,8 @@ class RvServicesAdapter : RecyclerView.Adapter<RvServiceHolder>() {
         }
     }
 
-    private var handlerClick: OnClickItemListener<BleService>? = null
-    private var handlerLongClick: OnLongClickItemListener<BleService>? = null
+    private var handlerClick: OnClickItemListener<BluetoothGattService>? = null
+    private var handlerLongClick: OnLongClickItemListener<BluetoothGattService>? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RvServiceHolder {
         val view = LayoutInflater.from(parent.context)
@@ -34,7 +33,7 @@ class RvServicesAdapter : RecyclerView.Adapter<RvServiceHolder>() {
 
     override fun onBindViewHolder(holder: RvServiceHolder, position: Int) {
         bleGatt?.let { gatt ->
-            gatt.services?.let { services ->
+            gatt.services.let { services ->
                 holder.itemView.setOnClickListener { view ->
                     handlerClick?.let { it(services[position], view) }
                 }

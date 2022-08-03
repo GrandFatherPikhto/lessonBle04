@@ -14,6 +14,7 @@ import android.util.Log
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.grandfatherpikhto.blin.idling.ScanIdling
+import com.grandfatherpikhto.blin.receivers.BcScanReceiver
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 
@@ -22,7 +23,7 @@ class BleScanManager constructor(private val bleManager: BleManager,
                                  ioDispatcher: CoroutineDispatcher = Dispatchers.IO)
     : DefaultLifecycleObserver {
 
-    private val bcScanReceiver:BcScanReceiver = BcScanReceiver(this)
+    private val bcScanReceiver: BcScanReceiver = BcScanReceiver(this)
 
     val applicationContext: Context get() = bleManager.applicationContext
 

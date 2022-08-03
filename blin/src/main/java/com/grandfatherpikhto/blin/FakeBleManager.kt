@@ -1,6 +1,8 @@
 package com.grandfatherpikhto.blin
 
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.BluetoothGattService
 import android.os.ParcelUuid
 import android.util.Log
 import com.grandfatherpikhto.blin.data.*
@@ -77,24 +79,24 @@ class FakeBleManager : BleManagerInterface {
         Log.d(logTag, "startScan($scanState)")
         if (scanState != BleScanManager.State.Scanning) {
             mutableStateFlowScanState.tryEmit(BleScanManager.State.Scanning)
-            scope.launch {
-                runBlocking {
-                    (1..10).forEach { i ->
-                        delay(Random.nextLong(200, 1000))
-                        mutableSharedFlowScanResult.tryEmit(
-                            BleScanResult(
-                                BleDevice(Random.nextBytes(6)
-                                    .joinToString (":") { String.format("%02X", it) },
-                                    String.format("BLE_%02d", i),
-                                    if (Random.nextBoolean()) BluetoothDevice.BOND_BONDED else BluetoothDevice.BOND_NONE),
-                                Random.nextBoolean(),
-                                Random.nextInt(-100, 0)))
-                        if (scanState != BleScanManager.State.Scanning) return@forEach
-                    }
-                    stopScan()
+            //scope.launch {
+            runBlocking {
+                (1..10).forEach { i ->
+                    delay(Random.nextLong(200, 1000))
+                    mutableSharedFlowScanResult.tryEmit(
+                        BleScanResult(
+                            BleDevice(Random.nextBytes(6)
+                                .joinToString (":") { String.format("%02X", it) },
+                                String.format("BLE_%02d", i),
+                                if (Random.nextBoolean()) BluetoothDevice.BOND_BONDED else BluetoothDevice.BOND_NONE),
+                            Random.nextBoolean(),
+                            Random.nextInt(-100, 0)))
+                    if (scanState != BleScanManager.State.Scanning) return@forEach
                 }
+                stopScan()
             }
         }
+        //}
         return true
     }
 
@@ -119,15 +121,15 @@ class FakeBleManager : BleManagerInterface {
             delay(Random.nextLong(300, 1500))
             mutableStateFlowConnectState.tryEmit(BleGattManager.State.Connected)
             scanResults.find { it.device.address == address }?.let { scanResult ->
-                val bleServices = mutableListOf<BleService>()
-                (0..1).forEach { _ ->
-                    val bleCharacteristics = mutableListOf<BleCharacteristic>()
+                val bleServices = mutableListOf<BluetoothGattService>()
+                (0..Random.nextInt(1,3)).forEach { _ ->
+                    val bluetoothGattService = BluetoothGattService(UUID.randomUUID(), 0)
                     (0..Random.nextInt(1,5)).forEach { _ ->
-                        bleCharacteristics
-                            .add(BleCharacteristic(ParcelUuid(UUID.randomUUID()),
-                            Random.nextBytes(Random.nextInt(1,7))))
+                        val characteristic = BluetoothGattCharacteristic(UUID.randomUUID(), 0, 0)
+                        characteristic.value = Random.nextBytes(Random.nextInt(0, 10))
+                        bluetoothGattService.addCharacteristic(characteristic)
                     }
-                    bleServices.add(BleService(ParcelUuid(UUID.randomUUID()), bleCharacteristics))
+                    bleServices.add(bluetoothGattService)
                 }
                 val bleGatt = BleGatt(scanResult.device, bleServices)
                 mutableStateFlowConnectState.tryEmit(BleGattManager.State.Connected)

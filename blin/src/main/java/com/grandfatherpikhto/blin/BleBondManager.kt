@@ -8,7 +8,7 @@ import android.content.IntentFilter
 import android.util.Log
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import com.grandfatherpikhto.BcBondReceiver
+import com.grandfatherpikhto.blin.receivers.BcBondReceiver
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

@@ -1,4 +1,4 @@
-package com.grandfatherpikhto.blin
+package com.grandfatherpikhto.blin.receivers
 
 import android.app.PendingIntent
 import android.bluetooth.le.BluetoothLeScanner
@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import com.grandfatherpikhto.blin.BleScanManager
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
