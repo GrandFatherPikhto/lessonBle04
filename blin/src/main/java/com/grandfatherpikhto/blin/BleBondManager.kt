@@ -61,6 +61,7 @@ class BleBondManager (private val bleManager: BleManager,
     }
 
     fun bondRequest(bluetoothDevice: BluetoothDevice) : Boolean {
+        println("Bond Device: ${bluetoothDevice.address}")
         if(bluetoothDevice.bondState == BluetoothDevice.BOND_BONDED) {
             msfState.tryEmit(State.Bondend)
         } else {

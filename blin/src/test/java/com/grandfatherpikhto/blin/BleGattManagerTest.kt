@@ -13,7 +13,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.MockitoAnnotations
-import org.mockito.kotlin.verify
 import org.robolectric.RobolectricTestRunner
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -50,7 +49,7 @@ class BleGattManagerTest {
         bleManager.bleGattManager.onConnectionStateChange(gatt, BluetoothGatt.GATT_SUCCESS, BluetoothProfile.STATE_CONNECTED)
         bleManager.bleGattManager.onGattDiscovered(gatt, BluetoothGatt.GATT_SUCCESS)
         assertEquals(BleGattManager.State.Connected, bleManager.connectState)
-        assertEquals(gatt, bleManager.bluetoothGatt)
+        assertEquals(gatt, bleManager.bleGattManager.bluetoothGatt)
     }
 
     @Test
@@ -66,7 +65,7 @@ class BleGattManagerTest {
         assertEquals(BleScanManager.State.Stopped, bleManager.scanState)
         bleManager.bleGattManager.onGattDiscovered(bluetoothGatt, BluetoothGatt.GATT_SUCCESS)
         assertEquals(BleGattManager.State.Connected, bleManager.connectState)
-        assertEquals(bluetoothGatt, bleManager.bluetoothGatt)
+        assertEquals(bluetoothGatt, bleManager.bleGattManager.bluetoothGatt)
     }
 
     @Test
