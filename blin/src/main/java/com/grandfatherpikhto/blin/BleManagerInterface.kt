@@ -1,5 +1,6 @@
 package com.grandfatherpikhto.blin
 
+import android.bluetooth.BluetoothGatt
 import androidx.lifecycle.DefaultLifecycleObserver
 import com.grandfatherpikhto.blin.data.BleGatt
 import com.grandfatherpikhto.blin.data.BleScanResult

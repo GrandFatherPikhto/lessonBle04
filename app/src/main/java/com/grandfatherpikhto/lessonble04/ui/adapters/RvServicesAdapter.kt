@@ -13,11 +13,13 @@ import kotlin.properties.Delegates
 
 class RvServicesAdapter : RecyclerView.Adapter<RvServiceHolder>() {
 
-    var bleGatt: BleGatt? by Delegates.observable(null) { _, oldValue, newValue ->
+    private val services = mutableListOf<BluetoothGattService>()
+
+    var bleGatt: BleGatt? by Delegates.observable(null) { _, _, newValue ->
         if (newValue == null) {
-            notifyItemRangeRemoved(0, oldValue?.services?.size ?: 0)
+            clear()
         } else {
-            notifyItemRangeInserted(0, newValue.services.size)
+            setItems(bleGatt!!.services)
         }
     }
 
@@ -32,21 +34,34 @@ class RvServicesAdapter : RecyclerView.Adapter<RvServiceHolder>() {
     }
 
     override fun onBindViewHolder(holder: RvServiceHolder, position: Int) {
-        bleGatt?.let { gatt ->
-            gatt.services.let { services ->
-                holder.itemView.setOnClickListener { view ->
-                    handlerClick?.let { it(services[position], view) }
-                }
-
-                holder.itemView.setOnLongClickListener { view ->
-                    handlerLongClick?.let { it(services[position], view) }
-                    true
-                }
-
-                holder.bind(services[position])
-            }
+        holder.itemView.setOnClickListener { view ->
+            handlerClick?.let { it(services[position], view) }
         }
+
+        holder.itemView.setOnLongClickListener { view ->
+            handlerLongClick?.let { it(services[position], view) }
+            true
+        }
+
+        holder.bind(services[position])
     }
 
-    override fun getItemCount(): Int = bleGatt?.services?.size ?: 0
+    override fun getItemCount(): Int = services.size
+
+    fun clear() {
+        val size = services.size
+        services.clear()
+        notifyItemRangeRemoved(0, size)
+    }
+
+    fun setItems(services: List<BluetoothGattService>) {
+        clear()
+        this.services.addAll(services)
+        notifyItemRangeInserted (0, this.services.size)
+    }
+
+    fun addItem(service: BluetoothGattService) {
+        services.add(service)
+        notifyItemInserted(services.size - 1)
+    }
 }

@@ -12,15 +12,17 @@ import kotlin.properties.Delegates
 
 class RvCharacteristicsAdapter : RecyclerView.Adapter<RvCharacteristicHolder> () {
     private val logTag = this.javaClass.simpleName
+    private val characteristics = mutableListOf<BluetoothGattCharacteristic>()
+
     var bleService: BluetoothGattService?
-            by Delegates.observable(null) { _, oldValue, newValue ->
+            by Delegates.observable(null) { _, _, newValue ->
                 if (newValue == null) {
-                    notifyItemRangeRemoved(0, oldValue?.characteristics?.size ?: 0)
+                    clear()
                 } else {
-                    notifyItemRangeInserted(0, newValue.characteristics.size)
-                    // Log.d(logTag, "size: ${newValue?.characteristics?.size ?: 0}")
+                    setItems(newValue.characteristics)
                 }
             }
+
     private var handlerClick: OnClickItemListener<BluetoothGattCharacteristic>? = null
     private var handlerLongClick: OnLongClickItemListener<BluetoothGattCharacteristic>? = null
 
@@ -49,4 +51,21 @@ class RvCharacteristicsAdapter : RecyclerView.Adapter<RvCharacteristicHolder> ()
     }
 
     override fun getItemCount(): Int = bleService?.characteristics?.size ?: 0
+
+    fun clear() {
+        val size = characteristics.size
+        characteristics.clear()
+        notifyItemRangeRemoved(0, size)
+    }
+
+    fun setItems(characteristics: List<BluetoothGattCharacteristic>) {
+        clear()
+        this.characteristics.addAll(characteristics)
+        notifyItemRangeInserted(0, this.characteristics.size)
+    }
+
+    fun addItem(characteristic: BluetoothGattCharacteristic) {
+        characteristics.add(characteristic)
+        notifyItemInserted(characteristics.size - 1)
+    }
 }

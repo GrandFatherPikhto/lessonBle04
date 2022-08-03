@@ -93,5 +93,4 @@ class BleManager constructor(private val context: Context,
     }
 
     override fun disconnect() = bleGattManager.disconnect()
-
 }

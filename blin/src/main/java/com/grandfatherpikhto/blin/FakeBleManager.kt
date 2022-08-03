@@ -79,8 +79,7 @@ class FakeBleManager : BleManagerInterface {
         Log.d(logTag, "startScan($scanState)")
         if (scanState != BleScanManager.State.Scanning) {
             mutableStateFlowScanState.tryEmit(BleScanManager.State.Scanning)
-            //scope.launch {
-            runBlocking {
+            scope.launch {
                 (1..10).forEach { i ->
                     delay(Random.nextLong(200, 1000))
                     mutableSharedFlowScanResult.tryEmit(
@@ -96,7 +95,7 @@ class FakeBleManager : BleManagerInterface {
                 stopScan()
             }
         }
-        //}
+
         return true
     }
 
