@@ -1,5 +1,6 @@
 package com.grandfatherpikhto.blin
 
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
@@ -8,11 +9,14 @@ import android.content.IntentFilter
 import android.util.Log
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import com.grandfatherpikhto.blin.data.BleBondState
+import com.grandfatherpikhto.blin.data.BleDevice
 import com.grandfatherpikhto.blin.receivers.BcBondReceiver
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class BleBondManager (private val bleManager: BleManager,
@@ -27,15 +31,16 @@ class BleBondManager (private val bleManager: BleManager,
 
     enum class State (val value: Int) {
         None(0x00),
-        Bonding(0x01),
-        Bondend(0x02),
-        Reject(0x03),
-        Error(0x04)
+        Request(0x01),
+        Bonding(0x02),
+        Bonded(0x03),
+        Reject(0x04),
+        Error(0xFF)
     }
 
-    private val msfState = MutableStateFlow(State.None)
-    val stateFlowBond get() = msfState.asStateFlow()
-    val stateBond get() = msfState.value
+    private val mutableStateFlowBleBondState = MutableStateFlow<BleBondState?>(null)
+    val stateFlowBondState get() = mutableStateFlowBleBondState.asStateFlow()
+    val bondState get() = mutableStateFlowBleBondState.value
 
     private val bcBondReceiver by lazy {
         BcBondReceiver(this, dispatcher)
@@ -52,25 +57,31 @@ class BleBondManager (private val bleManager: BleManager,
         super.onDestroy(owner)
     }
 
+    /**
+     * Uppercase -- важно! Потому, что иначе, устройство не будет найдено!
+     */
     fun bondRequest(address: String) : Boolean {
-        val bluetoothDevice =
         (bleManager.applicationContext
             .getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager)
-            .adapter.getRemoteDevice(address)
-        return bondRequest(bluetoothDevice)
+            .adapter.getRemoteDevice(address.uppercase())?.let { bluetoothDevice ->
+                return bondRequest(bluetoothDevice)
+            }
+
+        return false
     }
 
+    @SuppressLint("MissingPermission")
     fun bondRequest(bluetoothDevice: BluetoothDevice) : Boolean {
         println("Bond Device: ${bluetoothDevice.address}")
         if(bluetoothDevice.bondState == BluetoothDevice.BOND_BONDED) {
-            msfState.tryEmit(State.Bondend)
+            mutableStateFlowBleBondState.tryEmit(BleBondState(BleDevice(bluetoothDevice), State.Bonded))
         } else {
             requestDevice = bluetoothDevice
             if (bluetoothDevice.createBond()) {
-                msfState.tryEmit(State.Bonding)
+                mutableStateFlowBleBondState.tryEmit(BleBondState(BleDevice(bluetoothDevice), State.Request))
                 return true
             } else {
-                msfState.tryEmit(State.Error)
+                mutableStateFlowBleBondState.tryEmit(BleBondState(BleDevice(bluetoothDevice), State.Error))
             }
         }
 
@@ -96,10 +107,14 @@ class BleBondManager (private val bleManager: BleManager,
         Log.d(logTag, "onSetBondingDevice($bluetoothDevice, $oldState, $newState)")
         bluetoothDevice?.let { device ->
             if (device == requestDevice) {
-                if (newState == BluetoothDevice.BOND_BONDED) {
-                    msfState.tryEmit(State.Bondend)
-                } else {
-                    msfState.tryEmit(State.Reject)
+                when(newState) {
+                    BluetoothDevice.BOND_BONDING -> { mutableStateFlowBleBondState
+                        .tryEmit(BleBondState(BleDevice(bluetoothDevice), State.Bonding)) }
+                    BluetoothDevice.BOND_BONDED -> { mutableStateFlowBleBondState
+                                .tryEmit(BleBondState(BleDevice(bluetoothDevice), State.Bonded)) }
+                    BluetoothDevice.BOND_NONE -> { mutableStateFlowBleBondState
+                        .tryEmit(BleBondState(BleDevice(bluetoothDevice), State.Reject)) }
+                    else -> { Log.d(logTag, "Unknown State: $newState")}
                 }
             }
         }

@@ -96,7 +96,8 @@ class BleGattManager constructor(private val bleManager: BleManager,
         Log.d(logTag, "connect($address)")
         if (connectState == State.Disconnected) {
             connectIdling?.idling = false
-            bleManager.bluetoothAdapter.getRemoteDevice(address)?.let { device ->
+            bleManager.bluetoothAdapter.getRemoteDevice(address.uppercase())
+                ?.let { device ->
                 mutableStateFlowConnectState.tryEmit(State.Connecting)
                 bluetoothDevice = device
                 attemptReconnect = true

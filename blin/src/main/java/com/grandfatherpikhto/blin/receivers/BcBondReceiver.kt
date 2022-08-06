@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothDevice
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import com.grandfatherpikhto.blin.BleBondManager
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -23,7 +24,7 @@ class BcBondReceiver constructor(private val bleBondManager: BleBondManager,
                         intent.getIntExtra(BluetoothDevice.EXTRA_PREVIOUS_BOND_STATE, -1)
                     val bluetoothDevice: BluetoothDevice? =
                         intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
-                    // Log.d(TAG, "ACTION_BOND_STATE_CHANGED(${device?.address}): $previousBondState => $bondState")
+                    Log.d(logTag, "ACTION_BOND_STATE_CHANGED(${bluetoothDevice?.address}): $previousBondState => $bondState")
                     bleBondManager.onSetBondingDevice(bluetoothDevice, previousBondState, bondState)
                 }
                 else -> {

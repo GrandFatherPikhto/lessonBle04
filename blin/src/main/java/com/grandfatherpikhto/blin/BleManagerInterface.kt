@@ -2,6 +2,7 @@ package com.grandfatherpikhto.blin
 
 import android.bluetooth.BluetoothGatt
 import androidx.lifecycle.DefaultLifecycleObserver
+import com.grandfatherpikhto.blin.data.BleBondState
 import com.grandfatherpikhto.blin.data.BleGatt
 import com.grandfatherpikhto.blin.data.BleScanResult
 import kotlinx.coroutines.flow.SharedFlow
@@ -25,8 +26,8 @@ interface BleManagerInterface : DefaultLifecycleObserver {
     val stateFlowGatt: StateFlow<BleGatt?>
     val bluetoothGatt: BleGatt?
 
-    val stateFlowBondState: StateFlow<BleBondManager.State>
-    val stateBond: BleBondManager.State
+    val stateFlowBondState: StateFlow<BleBondState?>
+    val bondState: BleBondState?
 
     fun bondRequest(address: String): Boolean
 

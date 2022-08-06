@@ -6,6 +6,7 @@ import android.bluetooth.le.BluetoothLeScanner
 import android.content.Context
 import android.util.Log
 import androidx.lifecycle.LifecycleOwner
+import com.grandfatherpikhto.blin.data.BleBondState
 import com.grandfatherpikhto.blin.data.BleGatt
 import com.grandfatherpikhto.blin.data.BleScanResult
 import kotlinx.coroutines.CoroutineDispatcher
@@ -59,11 +60,10 @@ class BleManager constructor(private val context: Context,
         else
             BleGatt(bleGattManager.bluetoothGatt!!)
 
-    override val stateFlowBondState get() = bleBondManager.stateFlowBond
-    override val stateBond get() = bleBondManager.stateBond
+    override val stateFlowBondState get() = bleBondManager.stateFlowBondState
+    override val bondState: BleBondState? get() = bleBondManager.bondState
 
-    override fun bondRequest(address: String)
-        = bleBondManager.bondRequest(address)
+    override fun bondRequest(address: String) = bleBondManager.bondRequest(address)
 
     override fun onCreate(owner: LifecycleOwner) {
         super.onCreate(owner)

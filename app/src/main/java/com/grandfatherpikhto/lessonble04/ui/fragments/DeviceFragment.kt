@@ -17,6 +17,7 @@ import com.grandfatherpikhto.lessonble04.databinding.FragmentDeviceBinding
 import com.grandfatherpikhto.lessonble04.helper.linkMenu
 import com.grandfatherpikhto.lessonble04.models.*
 import com.grandfatherpikhto.lessonble04.ui.adapters.RvServicesAdapter
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 
 /**
@@ -177,8 +178,9 @@ class DeviceFragment : Fragment() {
         }
 
         lifecycleScope.launch {
-            deviceViewModel.stateFlowBond.collect { bondState ->
-                if (bondState == BleBondManager.State.Bondend) {
+            deviceViewModel.stateFlowBondState.filterNotNull().collect { bondState ->
+                Log.d(logTag, "bondState = $bondState")
+                if (bondState.state == BleBondManager.State.Bonded) {
                     binding.ivBlePaired.setImageResource(R.drawable.ic_paired)
                 }
             }

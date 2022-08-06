@@ -14,8 +14,6 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.Mockito.any
 import org.mockito.Mockito.lenient
 import org.mockito.MockitoAnnotations
 import org.robolectric.RobolectricTestRunner
@@ -58,13 +56,13 @@ class BleBondManagerTest {
         val bluetoothDevice = mockBluetoothDevice(address = address, name = "BLE_DEVICE")
         lenient().`when`(bluetoothDevice.bondState).thenReturn(BluetoothDevice.BOND_NONE)
         lenient().`when`(bluetoothDevice.createBond()).thenReturn(true)
-        assertEquals(BleBondManager.State.None, bleManager.stateBond)
+        assertEquals(BleBondManager.State.None, bleManager.bondState?.state)
         // bleManager.bondRequest(address)
         bleManager.bleBondManager.bondRequest(bluetoothDevice)
-        assertEquals(BleBondManager.State.Bonding, bleManager.stateBond)
+        assertEquals(BleBondManager.State.Bonding, bleManager.bondState?.state)
         lenient().`when`(bluetoothDevice.bondState).thenReturn(BluetoothDevice.BOND_BONDED)
         bleManager.bleBondManager.onSetBondingDevice(bluetoothDevice, BluetoothDevice.BOND_NONE, BluetoothDevice.BOND_BONDED)
-        assertEquals(BleBondManager.State.Bondend, bleManager.stateBond)
+        assertEquals(BleBondManager.State.Bonded, bleManager.bondState?.state)
     }
 
     @Test
@@ -72,9 +70,9 @@ class BleBondManagerTest {
         val bluetoothDevice = mockBluetoothDevice(address = ADDRESS, name = NAME)
         lenient().`when`(bluetoothDevice.bondState).thenReturn(BluetoothDevice.BOND_NONE)
         lenient().`when`(bluetoothDevice.createBond()).thenReturn(false)
-        assertEquals(BleBondManager.State.None, bleManager.stateBond)
+        assertEquals(BleBondManager.State.None, bleManager.bondState?.state)
         bleManager.bleBondManager.bondRequest(bluetoothDevice)
-        assertEquals(BleBondManager.State.Error, bleManager.stateBond)
+        assertEquals(BleBondManager.State.Error, bleManager.bondState?.state)
     }
 
     @Test
@@ -82,11 +80,11 @@ class BleBondManagerTest {
         val bluetoothDevice = mockBluetoothDevice(address = ADDRESS, name = NAME)
         lenient().`when`(bluetoothDevice.bondState).thenReturn(BluetoothDevice.BOND_NONE)
         lenient().`when`(bluetoothDevice.createBond()).thenReturn(true)
-        assertEquals(BleBondManager.State.None, bleManager.stateBond)
+        assertEquals(BleBondManager.State.None, bleManager.bondState?.state)
         bleManager.bleBondManager.bondRequest(bluetoothDevice)
-        assertEquals(BleBondManager.State.Bonding, bleManager.stateBond)
+        assertEquals(BleBondManager.State.Bonding, bleManager.bondState?.state)
         lenient().`when`(bluetoothDevice.bondState).thenReturn(BluetoothDevice.BOND_BONDED)
         bleManager.bleBondManager.onSetBondingDevice(bluetoothDevice, BluetoothDevice.BOND_NONE, BluetoothDevice.BOND_NONE)
-        assertEquals(BleBondManager.State.Reject, bleManager.stateBond)
+        assertEquals(BleBondManager.State.Reject, bleManager.bondState?.state)
     }
 }

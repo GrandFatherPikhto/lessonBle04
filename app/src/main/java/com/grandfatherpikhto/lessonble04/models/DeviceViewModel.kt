@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.grandfatherpikhto.blin.BleBondManager
 import com.grandfatherpikhto.blin.BleGattManager
 import com.grandfatherpikhto.blin.BleManagerInterface
+import com.grandfatherpikhto.blin.data.BleBondState
 import com.grandfatherpikhto.blin.data.BleGatt
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,9 +28,9 @@ class DeviceViewModel: ViewModel () {
     val stateFlowGatt get() = mutableStateFlowBleGatt.asStateFlow()
     val bluetoothGatt get() = mutableStateFlowBleGatt.value
 
-    private val mutableStateFlowBond = MutableStateFlow(BleBondManager.State.None)
-    val stateFlowBond get() = mutableStateFlowBond.asStateFlow()
-    val stateBond     get() = mutableStateFlowBond.value
+    private val mutableStateFlowBond = MutableStateFlow<BleBondState?>(null)
+    val stateFlowBondState get() = mutableStateFlowBond.asStateFlow()
+    val bondState          get() = mutableStateFlowBond.value
 
     var connected = false
 

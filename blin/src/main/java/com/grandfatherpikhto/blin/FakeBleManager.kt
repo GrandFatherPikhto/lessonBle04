@@ -54,10 +54,10 @@ class FakeBleManager : BleManagerInterface {
     override val bluetoothGatt: BleGatt?
         get() = mutableStateFlowBleGatt.value
 
-    private val mutableStateFlowBond = MutableStateFlow(BleBondManager.State.None)
-    override val stateFlowBondState: StateFlow<BleBondManager.State>
+    private val mutableStateFlowBond = MutableStateFlow<BleBondState?>(null)
+    override val stateFlowBondState: StateFlow<BleBondState?>
         get() = mutableStateFlowBond.asStateFlow()
-    override val stateBond: BleBondManager.State
+    override val bondState: BleBondState?
         get() = mutableStateFlowBond.value
 
     override fun bondRequest(address: String): Boolean {
