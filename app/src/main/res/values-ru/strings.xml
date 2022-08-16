@@ -16,4 +16,6 @@
     <string name="unknown_device">Неизвестное Устройство</string>
     <string name="permission_granted">Разрешение на %1$s получение</string>
     <string name="permission_not_granted">Разрешение на %1$s не получено</string>
+    <string name="custom_service">Пользовательский Сервис</string>
+    <string name="custom_charactersistic">Пользовательская Характеристика</string>
 </resources>

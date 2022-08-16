@@ -19,5 +19,7 @@
     <string name="default_uuid" translatable="false">123e4567-e89b-12d3-a456-426614174000</string>
     <string name="permission_granted">Permission %1$s is granted</string>
     <string name="permission_not_granted">Permission on %1$s is not granted</string>
+    <string name="custom_service">Custom Service</string>
+    <string name="custom_charactersistic">Custom Characteristic</string>
 
 </resources>

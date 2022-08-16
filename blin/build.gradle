@@ -42,7 +42,7 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.navigation:navigation-fragment-ktx:2.5.1'
     implementation 'androidx.navigation:navigation-ui-ktx:2.5.1'
-    implementation "androidx.fragment:fragment:1.5.1"
+    implementation "androidx.fragment:fragment:1.5.2"
     implementation 'androidx.test.espresso:espresso-idling-resource:3.4.0'
 
     testImplementation 'junit:junit:4.13.2'

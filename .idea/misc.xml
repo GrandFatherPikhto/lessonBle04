@@ -3,6 +3,12 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="app/src/main/res/drawable/ic_connect.xml" value="0.165" />
+        <entry key="app/src/main/res/drawable/ic_connect_big.xml" value="0.165" />
+        <entry key="app/src/main/res/drawable/ic_connectable.xml" value="0.165" />
+        <entry key="app/src/main/res/drawable/ic_disconnect.xml" value="0.165" />
+        <entry key="app/src/main/res/drawable/ic_disconnect_big.xml" value="0.165" />
+        <entry key="app/src/main/res/drawable/ic_no_connectable.xml" value="0.165" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.2375" />
         <entry key="app/src/main/res/layout/fragment_device.xml" value="0.33" />
         <entry key="app/src/main/res/layout/fragment_first.xml" value="0.22760416666666666" />
